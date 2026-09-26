@@ -1,0 +1,27 @@
+{
+  "name": "tessel.js",
+  "version": "1.0.0",
+  "description": "A pure-JavaScript, framework-free port of the Tessel4J look and feel — Fluent-inspired Web Components for the browser.",
+  "type": "module",
+  "main": "src/tessel.js",
+  "module": "src/tessel.js",
+  "unpkg": "dist/tessel.min.js",
+  "exports": {
+    ".": "./src/tessel.js",
+    "./dist": "./dist/tessel.js",
+    "./dist/min": "./dist/tessel.min.js"
+  },
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "demo": "node scripts/serve.js",
+    "build": "node scripts/build.js"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

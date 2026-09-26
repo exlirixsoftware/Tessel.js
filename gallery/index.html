@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tessel.js Gallery</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; }
+  tsl-nav-view { height: 100vh; }
+  .page { display: flex; flex-direction: column; gap: 28px; max-width: 900px; }
+  .section-title { margin: 0 0 4px; }
+  .section-desc { margin: 0 0 12px; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .row.column { flex-direction: column; align-items: flex-start; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 4px; }
+  .icon-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px;
+    border-radius: 8px; }
+  .icon-cell:hover { background: var(--tsl-control-hover); }
+  .icon-cell span { font-size: 11px; color: var(--tsl-text-secondary); text-align: center; word-break: break-word; }
+  .swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
+  .swatch.active { border-color: var(--tsl-text); }
+  code.inline { font-family: var(--tsl-font-mono); background: var(--tsl-subtle); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<tsl-nav-view app-title="Tessel.js Gallery" id="nav">
+  <tsl-theme-toggle slot="topbar-actions"></tsl-theme-toggle>
+  <tsl-nav-item value="home" icon="home" selected>Home</tsl-nav-item>
+  <tsl-nav-header>Controls</tsl-nav-header>
+  <tsl-nav-item value="buttons" icon="checkbox-composite">Buttons</tsl-nav-item>
+  <tsl-nav-item value="inputs" icon="edit">Inputs</tsl-nav-item>
+  <tsl-nav-item value="selection" icon="accept">Selection</tsl-nav-item>
+  <tsl-nav-item value="collections" icon="list">Collections</tsl-nav-item>
+  <tsl-nav-item value="feedback" icon="ringer">Feedback</tsl-nav-item>
+  <tsl-nav-item value="layout" icon="view-all">Layout</tsl-nav-item>
+  <tsl-nav-item value="menus" icon="more">Menus</tsl-nav-item>
+  <tsl-nav-item value="icons" icon="emoji">Icons</tsl-nav-item>
+  <tsl-nav-item value="design" icon="color" footer>Design</tsl-nav-item>
+
+  <!-- ---------------------------------------------------------------- Home -->
+  <tsl-nav-page value="home">
+    <div class="page">
+      <tsl-text variant="title">Tessel.js</tsl-text>
+      <tsl-text variant="secondary">
+        A pure-JavaScript port of Tessel4J's Fluent-inspired look and feel — the same design tokens,
+        component set and behavior, rebuilt as framework-free Web Components for the browser.
+      </tsl-text>
+      <tsl-card header="Getting started">
+        <tsl-text variant="body">Import the entry module once, then use the tags directly in HTML:</tsl-text>
+        <pre style="background:var(--tsl-subtle);padding:12px;border-radius:8px;overflow:auto;font-size:13px;"><code>&lt;script type="module" src="tessel/src/tessel.js"&gt;&lt;/script&gt;
+&lt;tsl-button variant="accent"&gt;Save&lt;/tsl-button&gt;</code></pre>
+      </tsl-card>
+      <tsl-info-bar severity="informational" title="No build step">
+        Every component is a native custom element with an encapsulated shadow DOM — no bundler, no framework, no dependencies.
+      </tsl-info-bar>
+    </div>
+  </tsl-nav-page>
+
+  <!-- ------------------------------------------------------------- Buttons -->
+  <tsl-nav-page value="buttons">
+    <div class="page">
+      <div>
+        <tsl-text variant="header" class="section-title">Buttons</tsl-text>
+        <tsl-text variant="secondary" class="section-desc">Every ButtonStyle from ButtonPainter.java.</tsl-text>
+      </div>
+      <div class="row">
+        <tsl-button variant="standard">Standard</tsl-button>
+        <tsl-button variant="accent">Accent</tsl-button>
+        <tsl-button variant="outline">Outline</tsl-button>
+        <tsl-button variant="subtle">Subtle</tsl-button>
+        <tsl-button variant="danger">Danger</tsl-button>
+        <tsl-button variant="icon" icon="settings" title="Icon button"></tsl-button>
+        <tsl-button variant="link">Link style</tsl-button>
+      </div>
+      <div class="row">
+        <tsl-button variant="accent" icon="save">With icon</tsl-button>
+        <tsl-button variant="standard" disabled>Disabled</tsl-button>
+        <tsl-button variant="accent" disabled>Disabled</tsl-button>
+      </div>
+    </div>
+  </tsl-nav-page>
+
+  <!-- -------------------------------------------------------------- Inputs -->
+  <tsl-nav-page value="inputs">
+    <div class="page">
+      <tsl-text variant="header">Inputs</tsl-text>
+      <div class="row column">
+        <tsl-text-field placeholder="name@example.com" icon="mail"></tsl-text-field>
+        <tsl-text-field type="password" placeholder="Password"></tsl-text-field>
+        <tsl-text-field placeholder="Disabled" disabled></tsl-text-field>
+        <tsl-text-area placeholder="Write a description…" rows="4"></tsl-text-area>
+        <div class="row">
+          <tsl-number-box value="3" min="0" max="10"></tsl-number-box>
+          <tsl-select placeholder="Choose a fruit" id="fruitSelect">
+            <tsl-option value="apple">Apple</tsl-option>
+            <tsl-option value="banana">Banana</tsl-option>
+            <tsl-option value="cherry">Cherry</tsl-option>
+            <tsl-option value="date" disabled>Date (out of stock)</tsl-option>
+          </tsl-select>
+        </div>
+      </div>
+    </div>
+  </tsl-nav-page>
+
+  <!-- ----------------------------------------------------------- Selection -->
+  <tsl-nav-page value="selection">
+    <div class="page">
+      <tsl-text variant="header">Selection</tsl-text>
+      <div class="row column">
+        <tsl-checkbox checked>Send me updates</tsl-checkbox>
+        <tsl-checkbox indeterminate>Select all (partially)</tsl-checkbox>
+        <tsl-checkbox disabled>Disabled</tsl-checkbox>
+      </div>
+      <tsl-radio-group value="b">
+        <tsl-radio value="a">Option A</tsl-radio>
+        <tsl-radio value="b">Option B</tsl-radio>
+        <tsl-radio value="c">Option C</tsl-radio>
+      </tsl-radio-group>
+      <div class="row">
+        <tsl-switch checked>Notifications</tsl-switch>
+        <tsl-switch>Airplane mode</tsl-switch>
+      </div>
+      <tsl-slider min="0" max="100" value="40" style="width:280px"></tsl-slider>
+    </div>
+  </tsl-nav-page>
+
+  <!-- --------------------------------------------------------- Collections -->
+  <tsl-nav-page value="collections">
+    <div class="page">
+      <tsl-text variant="header">Collections</tsl-text>
+      <tsl-list value="b" style="width:260px">
+        <tsl-list-item value="a">Inbox</tsl-list-item>
+        <tsl-list-item value="b">Drafts</tsl-list-item>
+        <tsl-list-item value="c">Sent</tsl-list-item>
+        <tsl-list-item value="d" disabled>Archived (disabled)</tsl-list-item>
+      </tsl-list>
+
+      <tsl-tree style="width:280px">
+        <tsl-tree-item label="src" expanded>
+          <tsl-tree-item label="components" expanded>
+            <tsl-tree-item label="button.js"></tsl-tree-item>
+            <tsl-tree-item label="card.js"></tsl-tree-item>
+          </tsl-tree-item>
+          <tsl-tree-item label="tessel.js"></tsl-tree-item>
+        </tsl-tree-item>
+        <tsl-tree-item label="README.md"></tsl-tree-item>
+      </tsl-tree>
+
+      <tsl-table>
+        <table>
+          <thead><tr><th>Name</th><th>Role</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Ada Lovelace</td><td>Engineer</td><td><tsl-badge kind="success">Active</tsl-badge></td></tr>
+            <tr><td>Alan Turing</td><td>Researcher</td><td><tsl-badge kind="success">Active</tsl-badge></td></tr>
+            <tr><td>Grace Hopper</td><td>Architect</td><td><tsl-badge kind="neutral">Away</tsl-badge></td></tr>
+          </tbody>
+        </table>
+      </tsl-table>
+    </div>
+  </tsl-nav-page>
+
+  <!-- ------------------------------------------------------------ Feedback -->
+  <tsl-nav-page value="feedback">
+    <div class="page">
+      <tsl-text variant="header">Feedback</tsl-text>
+      <div class="row column" style="width:100%;">
+        <tsl-info-bar severity="informational" title="Informational" closable>Just so you know.</tsl-info-bar>
+        <tsl-info-bar severity="success" title="Success" closable>Your changes were saved.</tsl-info-bar>
+        <tsl-info-bar severity="warning" title="Warning" closable>Your subscription expires soon.</tsl-info-bar>
+        <tsl-info-bar severity="error" title="Error" closable>Something went wrong.</tsl-info-bar>
+      </div>
+      <div class="row">
+        <tsl-button id="snackBtn" variant="standard">Show snackbar</tsl-button>
+        <tsl-button id="dialogBtn" variant="danger">Delete file…</tsl-button>
+      </div>
+      <div class="row column" style="width:280px;">
+        <tsl-progress-bar value="65"></tsl-progress-bar>
+        <tsl-progress-bar indeterminate></tsl-progress-bar>
+      </div>
+    </div>
+  </tsl-nav-page>
+
+  <!-- -------------------------------------------------------------- Layout -->
+  <tsl-nav-page value="layout">
+    <div class="page">
+      <tsl-text variant="header">Layout</tsl-text>
+      <div class="row">
+        <tsl-card header="Profile" style="width:260px;">
+          <tsl-avatar name="Ada Lovelace" size="48"></tsl-avatar>
+          <tsl-text variant="secondary" style="margin-top:10px;">Countess of Lovelace</tsl-text>
+        </tsl-card>
+        <tsl-card header="Elevated" elevated style="width:260px;">
+          <tsl-text variant="body">This card has a soft drop shadow.</tsl-text>
+        </tsl-card>
+      </div>
+
+      <tsl-settings-card header="Notifications" description="Get alerted on new mentions" icon="ringer" style="width:420px;">
+        <tsl-switch checked slot="control"></tsl-switch>
+      </tsl-settings-card>
+
+      <tsl-expander header="Advanced settings" style="width:420px;">
+        <tsl-text variant="body">Extra options live in here — the body height and chevron rotation both animate smoothly.</tsl-text>
+      </tsl-expander>
+
+      <div class="row">
+        <tsl-badge>Neutral</tsl-badge>
+        <tsl-badge kind="accent">Accent</tsl-badge>
+        <tsl-badge kind="success">Success</tsl-badge>
+        <tsl-badge kind="warning">Warning</tsl-badge>
+        <tsl-badge kind="danger">Danger</tsl-badge>
+        <tsl-badge kind="info" solid>Solid</tsl-badge>
+      </div>
+
+      <div class="row">
+        <tsl-avatar name="Ada Lovelace"></tsl-avatar>
+        <tsl-avatar name="Alan Turing"></tsl-avatar>
+        <tsl-avatar name="Grace Hopper"></tsl-avatar>
+        <tsl-avatar name="Margaret Hamilton"></tsl-avatar>
+      </div>
+    </div>
+  </tsl-nav-page>
+
+  <!-- -------------------------------------------------------------- Menus -->
+  <tsl-nav-page value="menus">
+    <div class="page">
+      <tsl-text variant="header">Menus</tsl-text>
+      <div class="row">
+        <tsl-menu-button label="File">
+          <tsl-menu-item value="new" icon="add">New</tsl-menu-item>
+          <tsl-menu-item value="open" icon="folder">Open…</tsl-menu-item>
+          <tsl-menu-separator></tsl-menu-separator>
+          <tsl-menu-item value="save" icon="save">Save</tsl-menu-item>
+          <tsl-menu-separator></tsl-menu-separator>
+          <tsl-menu-checkbox-item value="wrap" checked>Word wrap</tsl-menu-checkbox-item>
+        </tsl-menu-button>
+        <tsl-menu-button label="More" icon="more" align="right"></tsl-menu-button>
+      </div>
+
+      <tsl-tabs value="a" style="width:420px;">
+        <tsl-tab value="a">Overview</tsl-tab>
+        <tsl-tab value="b">Details</tsl-tab>
+        <tsl-tab value="c">History</tsl-tab>
+        <tsl-tab-panel value="a"><tsl-text variant="body">Overview content.</tsl-text></tsl-tab-panel>
+        <tsl-tab-panel value="b"><tsl-text variant="body">Details content.</tsl-text></tsl-tab-panel>
+        <tsl-tab-panel value="c"><tsl-text variant="body">History content.</tsl-text></tsl-tab-panel>
+      </tsl-tabs>
+    </div>
+  </tsl-nav-page>
+
+  <!-- -------------------------------------------------------------- Icons -->
+  <tsl-nav-page value="icons">
+    <div class="page">
+      <tsl-text variant="header">Icons</tsl-text>
+      <tsl-text variant="secondary">Every Symbol from Tessel4J's icon catalog — vector-drawn, no icon font required.</tsl-text>
+      <div class="grid" id="iconGrid"></div>
+    </div>
+  </tsl-nav-page>
+
+  <!-- ------------------------------------------------------------- Design -->
+  <tsl-nav-page value="design">
+    <div class="page">
+      <tsl-text variant="header">Design</tsl-text>
+      <tsl-card header="Theme">
+        <div class="row">
+          <tsl-button variant="standard" data-theme="light">Light</tsl-button>
+          <tsl-button variant="standard" data-theme="dark">Dark</tsl-button>
+          <tsl-button variant="standard" data-theme="system">System</tsl-button>
+        </div>
+      </tsl-card>
+      <tsl-card header="Accent color">
+        <div class="row" id="accentRow"></div>
+      </tsl-card>
+    </div>
+  </tsl-nav-page>
+</tsl-nav-view>
+
+<script type="module">
+  import { Tessel } from '../src/tessel.js';
+
+  Tessel.setup(Tessel.Theme.SYSTEM);
+
+  // theme buttons
+  document.querySelectorAll('[data-theme]').forEach((btn) => {
+    btn.addEventListener('click', () => Tessel.setTheme(btn.dataset.theme));
+  });
+
+  // accent swatches
+  const accents = ['#4f46e5', '#0078d4', '#0891b2', '#059669', '#d97706', '#db2777', '#7c3aed', '#dc2626'];
+  const accentRow = document.getElementById('accentRow');
+  function renderAccents() {
+    accentRow.innerHTML = '';
+    for (const hex of accents) {
+      const btn = document.createElement('button');
+      btn.className = 'swatch';
+      btn.style.background = hex;
+      if (Tessel.getAccent() === hex) btn.classList.add('active');
+      btn.addEventListener('click', () => { Tessel.setAccent(hex); renderAccents(); });
+      accentRow.appendChild(btn);
+    }
+    const resetBtn = document.createElement('tsl-button');
+    resetBtn.setAttribute('variant', 'subtle');
+    resetBtn.textContent = 'Reset to built-in';
+    resetBtn.addEventListener('click', () => { Tessel.setAccent(null); renderAccents(); });
+    accentRow.appendChild(resetBtn);
+  }
+  renderAccents();
+
+  // icon grid
+  const iconGrid = document.getElementById('iconGrid');
+  for (const [name, key] of Object.entries(Tessel.Symbol)) {
+    const cell = document.createElement('div');
+    cell.className = 'icon-cell';
+    const icon = Tessel.icon(key, 22);
+    const label = document.createElement('span');
+    label.textContent = name;
+    cell.append(icon, label);
+    iconGrid.appendChild(cell);
+  }
+
+  // feedback demos
+  document.getElementById('snackBtn').addEventListener('click', () => {
+    Tessel.snackbar.show('Saved', { message: 'Your changes were saved.', severity: 'success' });
+  });
+  document.getElementById('dialogBtn').addEventListener('click', async () => {
+    const result = await Tessel.dialog.show({
+      title: 'Delete file?',
+      message: "This can't be undone.",
+      primaryText: 'Delete',
+      closeText: 'Cancel',
+      primaryDestructive: true,
+    });
+    if (result === Tessel.dialog.Result.PRIMARY) {
+      Tessel.snackbar.show('Deleted', { severity: 'informational' });
+    }
+  });
+</script>
+</body>
+</html>
