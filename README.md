@@ -1,3 +1,5 @@
+![logo](res/javascript.png)
+
 # Tessel.js
 
 A pure-JavaScript port of the [Tessel.NET](../Tessel.NET) / [Tessel4J](../Tessel4J) Fluent-inspired look and feel — the same
