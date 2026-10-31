@@ -18,10 +18,14 @@
   ],
   "scripts": {
     "demo": "node scripts/serve.js",
-    "build": "node scripts/build.js"
+    "build:css": "node scripts/build-css.js",
+    "dev:css": "node scripts/build-css.js --watch",
+    "build": "node scripts/build-css.js && node scripts/build.js"
   },
   "license": "MIT",
   "devDependencies": {
-    "esbuild": "^0.28.2"
+    "@tailwindcss/cli": "^4.3.3",
+    "esbuild": "^0.28.2",
+    "tailwindcss": "^4.3.3"
   }
 }

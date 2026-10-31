@@ -1,63 +1,59 @@
-// <tsl-number-box value="5" min="0" max="10" step="1"> — port of TesselSpinnerUI
-// (rounded input + stacked -/+ buttons, 28x26 each, radius 4 hover/pressed highlight).
+// <tsl-number-box value="5" min="0" max="10" step="1" header> — port of TesselSpinnerUI and Tessel.NET's NumberBox
+// (rounded input + stacked +/- buttons, 28x26 each, radius 4 hover/pressed highlight).
 
 import { TesselElement, define } from '../core/base-element.js';
+import { h, html } from '../core/dom.js';
 
-const STYLES = `
-  :host{display:inline-flex;width:120px;}
-  .field{display:flex;align-items:stretch;width:100%;height:32px;border-radius:var(--tsl-radius-md);
-    border:1px solid var(--tsl-border);background:var(--tsl-input-bg);overflow:hidden;
-    transition:border-color var(--tsl-duration-fast) var(--tsl-ease);}
-  .field:hover{border-color:var(--tsl-border-strong);}
-  .field.focused{border-color:var(--tsl-accent);}
-  input{flex:1;min-width:0;border:none;background:transparent;outline:none;font:inherit;font-size:14px;
-    color:var(--tsl-text);padding:0 10px;-moz-appearance:textfield;}
-  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
-  .steppers{display:flex;flex-direction:column;flex:none;width:28px;border-left:1px solid var(--tsl-border);}
-  .steppers button{flex:1;display:flex;align-items:center;justify-content:center;border:none;background:transparent;
-    color:var(--tsl-text-secondary);cursor:pointer;padding:0;}
-  .steppers button:hover{background:var(--tsl-control-hover);color:var(--tsl-text);}
-  .steppers button:active{background:var(--tsl-control-pressed);}
-  .steppers button:first-child{border-bottom:1px solid var(--tsl-border);}
-  :host([disabled]) .field{opacity:var(--tsl-disabled-alpha);pointer-events:none;}
-`;
+const HEADER = 'mb-1.5 block text-body font-medium text-text';
+const FIELD = 'flex h-8 w-full items-stretch overflow-hidden rounded-md border border-border bg-input transition-colors duration-fast ease-tessel '
+  + 'hover:border-border-strong focus-within:border-accent hover:focus-within:border-accent host-[disabled]:pointer-events-none host-[disabled]:opacity-45';
+const INPUT = 'min-w-0 flex-1 bg-transparent px-2.5 text-body text-text outline-none [appearance:textfield] '
+  + '[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
+const STEP = 'flex flex-1 cursor-pointer items-center justify-center bg-transparent p-0 text-text-secondary '
+  + 'hover:bg-control-hover hover:text-text active:bg-control-pressed';
+const PLUS = '<svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="10" x2="16" y2="10"/><line x1="10" y1="4" x2="10" y2="16"/></svg>';
+const MINUS = '<svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="10" x2="16" y2="10"/></svg>';
 
 export class TesselNumberBox extends TesselElement {
-  static styles = STYLES;
-  static observedAttributes = ['disabled', 'min', 'max', 'step', 'value'];
+  static styles = ':host{display:inline-flex;flex-direction:column;width:120px;}';
+  static observedAttributes = ['disabled', 'min', 'max', 'step', 'value', 'header'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const field = document.createElement('div');
-    field.className = 'field';
-    const input = document.createElement('input');
-    input.type = 'number';
-    const steppers = document.createElement('div');
-    steppers.className = 'steppers';
-    const up = document.createElement('button');
-    up.type = 'button';
-    up.setAttribute('aria-label', 'Increase');
-    up.tabIndex = -1; // the numeric input itself already handles focus/keyboard stepping
-    up.innerHTML = '<svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="10" x2="16" y2="10"/><line x1="10" y1="4" x2="10" y2="16"/></svg>';
-    const down = document.createElement('button');
-    down.type = 'button';
-    down.setAttribute('aria-label', 'Decrease');
-    down.tabIndex = -1;
-    down.innerHTML = '<svg width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="10" x2="16" y2="10"/></svg>';
-    steppers.append(up, down);
-    field.append(input, steppers);
-    this.shadowRoot.appendChild(field);
-    this._field = field;
-    this._input = input;
+    this._header = h('label', HEADER);
+    this._input = h('input', INPUT, { type: 'number' });
+    // The numeric input itself already handles focus and keyboard stepping, so the buttons skip the tab order.
+    const up = html('button', `${STEP} border-b border-border`, PLUS);
+    const down = html('button', STEP, MINUS);
+    for (const [btn, label] of [[up, 'Increase'], [down, 'Decrease']]) {
+      btn.type = 'button';
+      btn.tabIndex = -1;
+      btn.setAttribute('aria-label', label);
+      btn.addEventListener('mousedown', (e) => e.preventDefault());
+    }
+    this.shadowRoot.append(this._header, h('div', FIELD, null, this._input, h('div', 'flex w-7 flex-none flex-col border-l border-border', null, up, down)));
     this._sync();
 
-    up.addEventListener('click', () => { input.stepUp(); this._commit(); });
-    down.addEventListener('click', () => { input.stepDown(); this._commit(); });
-    input.addEventListener('focus', () => field.classList.add('focused'));
-    input.addEventListener('blur', () => field.classList.remove('focused'));
-    input.addEventListener('input', () => this._commit());
+    up.addEventListener('click', () => { this._input.stepUp(); this._commit(); });
+    down.addEventListener('click', () => { this._input.stepDown(); this._commit(); });
+    this._input.addEventListener('input', () => this._commit());
+    // Typing can leave a value outside min/max; snap it back when the user leaves the field.
+    this._input.addEventListener('blur', () => {
+      const clamped = this._clamp(this._input.valueAsNumber);
+      if (Number.isNaN(clamped)) return;
+      if (clamped !== this._input.valueAsNumber) {
+        this._input.value = String(clamped);
+        this._commit();
+      }
+    });
+  }
+
+  _clamp(n) {
+    const min = this.hasAttribute('min') ? Number(this.getAttribute('min')) : -Infinity;
+    const max = this.hasAttribute('max') ? Number(this.getAttribute('max')) : Infinity;
+    return Math.min(max, Math.max(min, n));
   }
 
   _commit() {
@@ -74,8 +70,10 @@ export class TesselNumberBox extends TesselElement {
     this._input.min = this.getAttribute('min') ?? '';
     this._input.max = this.getAttribute('max') ?? '';
     this._input.step = this.getAttribute('step') ?? '1';
-    if (this.hasAttribute('value')) this._input.value = this.getAttribute('value');
+    if (this.hasAttribute('value') && this._input.value !== this.getAttribute('value')) this._input.value = this.getAttribute('value');
     this._input.disabled = this.disabled;
+    this._header.textContent = this.getAttribute('header') || '';
+    this._header.hidden = !this.hasAttribute('header');
   }
 
   get value() { return Number(this._input ? this._input.value : this.getAttribute('value') || 0); }

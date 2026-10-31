@@ -29,19 +29,6 @@ export const FONT_STACK =
 export const MONO_STACK =
   "'Cascadia Mono', Consolas, 'JetBrains Mono', 'SF Mono', Menlo, 'DejaVu Sans Mono', ui-monospace, monospace";
 
-/** Typography ramp — mirrors `TextStyle`. Values are [fontSize, weight, isSecondaryColor]. */
-export const TEXT_STYLES = {
-  display: [40, 600, false],
-  title: [28, 600, false],
-  subtitle: [20, 600, false],
-  header: [16, 600, false],
-  'body-strong': [14, 600, false],
-  body: [14, 400, false],
-  secondary: [14, 400, true],
-  caption: [12, 400, true],
-  code: [13, 400, false],
-};
-
 export const DISABLED_ALPHA = 0.45;
 
 let baseInstalled = false;
@@ -56,12 +43,17 @@ export function installBaseStyles() {
     [data-tessel-root], [data-tessel-root] * { box-sizing: border-box; }
     [data-tessel-root] {
       font-family: ${FONT_STACK};
-      font-size: 14px;
       color: var(--tsl-text);
       background: var(--tsl-background);
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
+    /* The 14px base goes on <body>, not <html>: a root font-size would silently rescale every rem in the host page. */
+    [data-tessel-root] body { font-size: 14px; }
+    /* Scrollbars: thin, token-colored thumb on a transparent track (scrollbar-color inherits, scrollbar-width doesn't). */
+    html[data-tessel-root] { scrollbar-color: var(--tsl-border-strong) transparent; }
+    [data-tessel-root] * { scrollbar-width: thin; }
+    [data-tessel-root] *:hover { scrollbar-color: var(--tsl-text-tertiary) transparent; }
     [data-tessel-root] :focus { outline: none; }
     [data-tessel-root] :focus-visible { outline: none; }
     /* Light-DOM panel elements default to inline; :not([hidden]) never fights the UA [hidden] rule

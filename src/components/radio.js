@@ -4,55 +4,33 @@
 // does the mutual-exclusion bookkeeping that Swing's ButtonGroup would otherwise give for free.
 
 import { TesselElement, define } from '../core/base-element.js';
+import { h, cx } from '../core/dom.js';
 
-const RADIO_STYLES = `
-  :host{display:inline-flex;}
-  label{display:inline-flex;align-items:center;gap:10px;cursor:pointer;padding:4px 2px;user-select:none;}
-  input{position:absolute;opacity:0;width:20px;height:20px;margin:0;}
-  .box{position:relative;flex:none;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--tsl-text-tertiary);
-    background:var(--tsl-input-bg);transition:background var(--tsl-duration-fast) var(--tsl-ease), border-color var(--tsl-duration-fast) var(--tsl-ease);}
-  .dot{position:absolute;top:50%;left:50%;width:8px;height:8px;border-radius:50%;background:var(--tsl-on-accent);
-    transform:translate(-50%,-50%) scale(0);transition:transform var(--tsl-duration-fast) var(--tsl-ease);}
-  label:hover .box{border-color:var(--tsl-text-secondary);background:var(--tsl-control-hover);}
-  label:hover .dot{width:10px;height:10px;}
-  input:checked ~ .box{background:var(--tsl-accent);border-color:var(--tsl-accent);}
-  label:hover input:checked ~ .box{background:var(--tsl-accent-hover);border-color:var(--tsl-accent-hover);}
-  input:checked ~ .dot{transform:translate(-50%,-50%) scale(1);}
-  input:focus-visible ~ .box{outline:2px solid var(--tsl-accent);outline-offset:2px;}
-  :host([disabled]) .box{opacity:var(--tsl-disabled-alpha);}
-  :host([disabled]) label{pointer-events:none;}
-  .text{font-size:14px;color:var(--tsl-text);line-height:20px;}
-`;
+const LABEL = 'group inline-flex items-center gap-2.5 px-0.5 py-1 cursor-pointer select-none host-[disabled]:pointer-events-none';
+const BOX = 'relative flex-none size-5 rounded-full border-[1.5px] transition-colors duration-fast ease-tessel '
+  + 'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent host-[disabled]:opacity-45';
+const BOX_OFF = 'border-text-tertiary bg-input group-hover:border-text-secondary group-hover:bg-control-hover';
+const BOX_ON = 'border-accent bg-accent group-hover:border-accent-hover group-hover:bg-accent-hover';
+const DOT = 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-on-accent '
+  + 'transition-[transform,width,height] duration-fast ease-tessel';
 
 export class TesselRadio extends TesselElement {
-  static styles = RADIO_STYLES;
+  static styles = ':host{display:inline-flex;}';
   static observedAttributes = ['disabled', 'checked'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const label = document.createElement('label');
-    const input = document.createElement('input');
-    input.type = 'radio';
-    const box = document.createElement('span');
-    box.className = 'box';
-    const dot = document.createElement('span');
-    dot.className = 'dot';
-    box.appendChild(dot);
-    const text = document.createElement('span');
-    text.className = 'text';
-    text.appendChild(document.createElement('slot'));
-    label.append(input, box, text);
-    this.shadowRoot.appendChild(label);
-    this._input = input;
+    this._input = h('input', 'peer sr-only', { type: 'radio' });
+    this._dot = h('span', DOT);
+    this._box = h('span', '', null, this._dot);
+    this.shadowRoot.appendChild(
+      h('label', LABEL, null, this._input, this._box, h('span', 'text-body text-text', null, h('slot'))),
+    );
     this._sync();
 
-    input.addEventListener('click', (e) => {
-      // A lone radio (no group) can't be unchecked by clicking itself again.
-      if (input.checked) e.preventDefault();
-    });
-    input.addEventListener('change', () => {
+    this._input.addEventListener('change', () => {
       this.checked = true;
       this.emit('change', { value: this.value, checked: true });
     });
@@ -64,8 +42,12 @@ export class TesselRadio extends TesselElement {
   }
 
   _sync() {
-    this._input.checked = this.hasAttribute('checked');
+    const checked = this.hasAttribute('checked');
+    this._input.checked = checked;
     this._input.disabled = this.disabled;
+    this._box.className = cx(BOX, checked ? BOX_ON : BOX_OFF);
+    // The dot grows slightly on hover (10px vs 8px), like the Swing painter.
+    this._dot.className = cx(DOT, checked ? 'size-2 scale-100 group-hover:size-2.5' : 'size-2 scale-0');
   }
 
   get checked() { return this.hasAttribute('checked'); }
@@ -75,18 +57,16 @@ export class TesselRadio extends TesselElement {
   set value(v) { this.setAttribute('value', v); }
 }
 
-const GROUP_STYLES = `:host{display:flex;flex-direction:column;gap:2px;}`;
-
 export class TesselRadioGroup extends TesselElement {
-  static styles = GROUP_STYLES;
+  static styles = ':host{display:flex;flex-direction:column;gap:2px;}';
   static observedAttributes = ['value'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const slot = document.createElement('slot');
-    this.shadowRoot.appendChild(slot);
+    this.shadowRoot.appendChild(h('slot'));
+    this.setAttribute('role', 'radiogroup');
     this.addEventListener('change', (e) => {
       if (!(e.target instanceof TesselRadio)) return;
       for (const radio of this._radios()) radio.checked = radio === e.target;

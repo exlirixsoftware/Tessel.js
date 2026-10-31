@@ -1,0 +1,152 @@
+/*
+ * Tessel design tokens as Tailwind theme variables — shared by the shadow-DOM build (tessel.css) and the
+ * light-DOM build (light.css).
+ *
+ * Colors, radii, fonts and motion are not hard-coded here: they point at the --tsl-* custom properties
+ * that the theme engine (core/theme.js) writes on <html>, so light/dark/accent changes stay instant.
+ */
+
+@theme inline {
+  /* Drop Tailwind's default palette/shadows/etc: only Tessel tokens exist, so a typo'd class fails loudly. */
+  --color-*: initial;
+  --shadow-*: initial;
+  --radius-*: initial;
+  --font-*: initial;
+  --text-*: initial;
+  --ease-*: initial;
+  --animate-*: initial;
+
+  /* The design is pixel-based; rem would follow whatever font-size the host page puts on <html>.
+     One spacing step = 4px, so `h-8` is 32px, `px-3.5` is 14px and `gap-2` is 8px, as in stock Tailwind. */
+  --spacing: 4px;
+
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-background: var(--tsl-background);
+  --color-surface: var(--tsl-surface);
+  --color-surface-alt: var(--tsl-surface-alt);
+  --color-subtle: var(--tsl-subtle);
+  --color-border: var(--tsl-border);
+  --color-border-strong: var(--tsl-border-strong);
+
+  --color-text: var(--tsl-text);
+  --color-text-secondary: var(--tsl-text-secondary);
+  --color-text-tertiary: var(--tsl-text-tertiary);
+  --color-text-disabled: var(--tsl-text-disabled);
+
+  --color-control: var(--tsl-control-bg);
+  --color-control-hover: var(--tsl-control-hover);
+  --color-control-pressed: var(--tsl-control-pressed);
+  --color-input: var(--tsl-input-bg);
+  --color-overlay: var(--tsl-overlay);
+
+  --color-accent: var(--tsl-accent);
+  --color-accent-hover: var(--tsl-accent-hover);
+  --color-accent-pressed: var(--tsl-accent-pressed);
+  --color-accent-subtle: var(--tsl-accent-subtle);
+  --color-on-accent: var(--tsl-on-accent);
+
+  --color-success: var(--tsl-success);
+  --color-success-subtle: var(--tsl-success-subtle);
+  --color-warning: var(--tsl-warning);
+  --color-warning-subtle: var(--tsl-warning-subtle);
+  --color-danger: var(--tsl-danger);
+  --color-danger-hover: var(--tsl-danger-hover);
+  --color-danger-subtle: var(--tsl-danger-subtle);
+  --color-info: var(--tsl-info);
+  --color-info-subtle: var(--tsl-info-subtle);
+
+  --radius-xs: 2px;
+  --radius-sm: var(--tsl-radius-sm);
+  --radius-md: var(--tsl-radius-md);
+  --radius-lg: var(--tsl-radius-lg);
+  --radius-xl: 12px;
+  --radius-pill: var(--tsl-radius-pill);
+
+  --font-sans: var(--tsl-font);
+  --font-mono: var(--tsl-font-mono);
+
+  /* Tessel.NET type ramp (Tessel.Text.*): size / line-height. */
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-code: 13px;
+  --text-code--line-height: 20px;
+  --text-body: 14px;
+  --text-body--line-height: 20px;
+  --text-header: 16px;
+  --text-header--line-height: 22px;
+  --text-subtitle: 20px;
+  --text-subtitle--line-height: 28px;
+  --text-title: 28px;
+  --text-title--line-height: 36px;
+  --text-display: 40px;
+  --text-display--line-height: 52px;
+  --text-2xs: 10px;
+  --text-2xs--line-height: 14px;
+  --text-xs: 11px;
+  --text-xs--line-height: 16px;
+  --text-icon: 16px;
+  --text-icon--line-height: 1;
+
+  /* Tessel.NET elevation (Tessel.Shadow / Tessel.ShadowLarge), driven by the palette's shadow color. */
+  --shadow-sm: 0 1px 2px 0 var(--tsl-shadow);
+  --shadow-card: 0 2px 16px 0 var(--tsl-shadow);
+  --shadow-flyout: 0 4px 24px 0 var(--tsl-shadow), 0 0 0 1px var(--tsl-border);
+  --shadow-dialog: 0 8px 32px 0 var(--tsl-shadow), 0 0 0 1px var(--tsl-border);
+
+  --ease-tessel: var(--tsl-ease);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --animate-spin: tsl-spin 1s linear infinite;
+  --animate-shimmer: tsl-shimmer 1.4s ease-in-out infinite;
+  --animate-indeterminate: tsl-indeterminate 1.6s var(--tsl-ease) infinite;
+  --animate-fade-in: tsl-fade-in var(--tsl-duration-base) var(--tsl-ease) both;
+  --animate-pop-in: tsl-pop-in var(--tsl-duration-base) var(--tsl-ease) both;
+  --animate-ring: tsl-ring 1.4s linear infinite;
+}
+
+@theme {
+  --breakpoint-*: initial;
+}
+
+/* Utilities the default theme doesn't give us tokens for. */
+@utility duration-fast { transition-duration: var(--tsl-duration-fast); }
+@utility duration-base { transition-duration: var(--tsl-duration-base); }
+@utility duration-slow { transition-duration: var(--tsl-duration-slow); }
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--tsl-border-strong) transparent;
+}
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+@keyframes tsl-spin { to { transform: rotate(360deg); } }
+@keyframes tsl-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes tsl-indeterminate {
+  0% { left: -40%; width: 40%; }
+  60% { left: 100%; width: 40%; }
+  100% { left: 100%; width: 40%; }
+}
+@keyframes tsl-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tsl-pop-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes tsl-page-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes tsl-ring {
+  0% { transform: rotate(0deg); stroke-dasharray: 1 150; stroke-dashoffset: 0; }
+  50% { transform: rotate(180deg); stroke-dasharray: 90 150; stroke-dashoffset: -35; }
+  100% { transform: rotate(360deg); stroke-dasharray: 90 150; stroke-dashoffset: -124; }
+}

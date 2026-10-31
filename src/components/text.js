@@ -1,31 +1,42 @@
 // <tsl-text variant="display|title|subtitle|header|body-strong|body|secondary|caption|code">...</tsl-text>
-// Port of TextStyle / TextBlock.java (font ramp + color per style, wraps natively unlike JLabel).
+// Port of TextStyle / TextBlock.java and Tessel.NET's Tessel.Text.* ramp (font ramp + color per style,
+// wraps natively unlike JLabel).
 
 import { TesselElement, define } from '../core/base-element.js';
-import { TEXT_STYLES, MONO_STACK } from '../core/tokens.js';
+import { h, cx } from '../core/dom.js';
 
-function buildStyleRules() {
-  return Object.entries(TEXT_STYLES).map(([name, [size, weight, secondary]]) => `
-    :host([variant="${name}"]){font-size:${size}px;font-weight:${weight};
-      color:var(${secondary ? '--tsl-text-secondary' : '--tsl-text'});
-      ${name === 'code' ? `font-family:${MONO_STACK};` : ''}}
-  `).join('\n');
-}
-
-const STYLES = `
-  :host{display:block;font-size:14px;font-weight:400;color:var(--tsl-text);line-height:1.45;}
-  ${buildStyleRules()}
-`;
+const VARIANTS = {
+  display: 'text-display font-semibold text-text',
+  title: 'text-title font-semibold text-text',
+  subtitle: 'text-subtitle font-semibold text-text',
+  header: 'text-header font-semibold text-text',
+  'body-strong': 'text-body font-semibold text-text',
+  body: 'text-body font-normal text-text',
+  secondary: 'text-body font-normal text-text-secondary',
+  caption: 'text-caption font-normal text-text-secondary',
+  code: 'font-mono text-code font-normal text-text',
+};
 
 export class TesselText extends TesselElement {
-  static styles = STYLES;
+  static styles = ':host{display:block;}';
+  static observedAttributes = ['variant'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    if (!this.hasAttribute('variant')) this.setAttribute('variant', 'body');
-    this.shadowRoot.appendChild(document.createElement('slot'));
+    this._body = h('div', '', null, h('slot'));
+    this.shadowRoot.appendChild(this._body);
+    this._sync();
+  }
+
+  attributeChangedCallback(name, oldV, newV) {
+    super.attributeChangedCallback?.(name, oldV, newV);
+    if (this._built) this._sync();
+  }
+
+  _sync() {
+    this._body.className = cx('wrap-break-word', VARIANTS[this.getAttribute('variant')] || VARIANTS.body);
   }
 }
 

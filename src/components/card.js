@@ -1,27 +1,21 @@
-// <tsl-card header="Profile" [elevated]>content</tsl-card> — port of components/Card.java
+// <tsl-card header="Profile" [elevated]>content</tsl-card> — port of components/Card.java and Tessel.NET's Card
 // (radius 8, padding 20, 1px border, optional soft drop shadow).
 
 import { TesselElement, define } from '../core/base-element.js';
+import { h } from '../core/dom.js';
 
-const STYLES = `
-  :host{display:block;border-radius:var(--tsl-radius-lg);background:var(--tsl-surface);
-    border:1px solid var(--tsl-border);padding:20px;box-shadow:0 0 0 rgba(0,0,0,0);
-    transition:box-shadow var(--tsl-duration-base) var(--tsl-ease);}
-  :host([elevated]){box-shadow:0 1px 2px var(--tsl-shadow), 0 8px 24px var(--tsl-shadow);}
-  .header{font-size:16px;font-weight:600;color:var(--tsl-text);margin-bottom:14px;}
-`;
+const CARD = 'rounded-lg border border-border bg-surface p-5 transition-shadow duration-base ease-tessel host-[elevated]:shadow-card';
 
 export class TesselCard extends TesselElement {
-  static styles = STYLES;
+  static styles = ':host{display:block;}';
   static observedAttributes = ['header'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    this._header = document.createElement('div');
-    this._header.className = 'header';
-    this.shadowRoot.append(this._header, document.createElement('slot'));
+    this._header = h('div', 'mb-3.5 text-header font-semibold text-text');
+    this.shadowRoot.appendChild(h('div', CARD, null, this._header, h('slot')));
     this._sync();
   }
 
@@ -33,7 +27,7 @@ export class TesselCard extends TesselElement {
   _sync() {
     const header = this.getAttribute('header');
     this._header.textContent = header || '';
-    this._header.style.display = header ? '' : 'none';
+    this._header.hidden = !header;
   }
 }
 

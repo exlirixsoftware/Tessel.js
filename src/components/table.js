@@ -1,56 +1,74 @@
-// <tsl-table><table><thead>...</thead><tbody>...</tbody></table></tsl-table>
-// Restyles a plain, accessible native <table> — loosely based on TesselTableUI/TesselTableHeaderUI,
-// dialed up for the web: an uppercase letter-spaced header on a tinted band, 44px rows with zebra
-// striping, rounded/elevated outer card, accentSubtle selection.
+// <tsl-table [selectable] [sortable]><table><thead>...</thead><tbody>...</tbody></table></tsl-table>
+// Restyles a plain, accessible native <table> — loosely based on TesselTableUI/TesselTableHeaderUI and
+// Tessel.NET's DataGrid, dialed up for the web: an uppercase letter-spaced header on a tinted band, 44px rows
+// with zebra striping, rounded/elevated outer card, accentSubtle selection.
+//
+// `::slotted()` can only match the slotted <table> itself, so the cell rules live in a light-DOM sheet
+// (styles/light.css, compiled by Tailwind) adopted by whichever root contains the element.
+//
+//   selectable — clicking a row marks it `aria-selected` and fires `change` with { row, index }.
+//   sortable   — clicking a header cell sorts the body rows by that column (text, or numbers when both parse)
+//                and fires `sort` with { column, direction }.
 
 import { TesselElement, define } from '../core/base-element.js';
+import lightCss from '../styles/light.generated.js';
+import { h } from '../core/dom.js';
 
-// `::slotted()` can only match the top-level slotted node itself (the <table>) — it cannot reach
-// into that table's own descendants (<thead>, <th>, <td>, ...). A `::slotted(table) thead th{...}`
-// rule looks reasonable but is invalid per the CSS Scoping spec, and CSSStyleSheet.replaceSync()
-// silently drops invalid rules rather than erroring, so this shipped for a while quietly doing
-// nothing — the table was rendering with bare browser-default <table> styling the whole time.
-// Styling the actual cells needs a plain, un-scoped stylesheet in the *light* DOM instead, scoped by
-// prefixing every selector with the `tsl-table` tag name so it can't leak onto unrelated tables.
-let tableStylesInstalled = false;
-function installTableStyles() {
-  if (tableStylesInstalled) return;
-  tableStylesInstalled = true;
-  const style = document.createElement('style');
-  style.id = 'tessel-table-cell-styles';
-  style.textContent = `
-    tsl-table table{width:100%;border-collapse:collapse;border-spacing:0;font-size:14px;color:var(--tsl-text);}
-    tsl-table thead th{text-align:left;font-size:11px;font-weight:700;color:var(--tsl-text-secondary);
-      text-transform:uppercase;letter-spacing:0.04em;padding:13px 20px;background:var(--tsl-subtle);
-      border-bottom:1px solid var(--tsl-border);position:sticky;top:0;}
-    tsl-table thead th:first-child{border-top-left-radius:var(--tsl-radius-lg);}
-    tsl-table thead th:last-child{border-top-right-radius:var(--tsl-radius-lg);}
-    tsl-table tbody td{height:44px;padding:0 20px;border-bottom:1px solid var(--tsl-border);}
-    tsl-table tbody tr:last-child td{border-bottom:none;}
-    tsl-table tbody tr{transition:background var(--tsl-duration-fast) var(--tsl-ease);}
-    tsl-table tbody tr:nth-child(even){background:var(--tsl-surface-alt);}
-    tsl-table tbody tr:hover{background:var(--tsl-control-hover);}
-    tsl-table tbody tr[aria-selected="true"]{background:var(--tsl-accent-subtle);}
-    tsl-table tbody tr:last-child td:first-child{border-bottom-left-radius:var(--tsl-radius-lg);}
-    tsl-table tbody tr:last-child td:last-child{border-bottom-right-radius:var(--tsl-radius-lg);}
-  `;
-  document.head.appendChild(style);
+let lightSheet = null;
+function adoptLightStyles(root) {
+  if (!('adoptedStyleSheets' in Document.prototype)) {
+    if (root.querySelector?.('style[data-tessel-light]')) return;
+    const style = document.createElement('style');
+    style.dataset.tesselLight = '';
+    style.textContent = lightCss;
+    (root.head || root).appendChild(style);
+    return;
+  }
+  lightSheet ??= new CSSStyleSheet();
+  if (!lightSheet.cssRules.length) lightSheet.replaceSync(lightCss);
+  if (!root.adoptedStyleSheets.includes(lightSheet)) root.adoptedStyleSheets = [...root.adoptedStyleSheets, lightSheet];
 }
 
-const STYLES = `
-  :host{display:block;overflow:auto;border:1px solid var(--tsl-border);border-radius:var(--tsl-radius-lg);
-    background:var(--tsl-surface);box-shadow:0 1px 2px var(--tsl-shadow);}
-`;
-
 export class TesselTable extends TesselElement {
-  static styles = STYLES;
+  static styles = ':host{display:block;overflow:auto;border:1px solid var(--tsl-border);border-radius:var(--tsl-radius-lg);background:var(--tsl-surface);box-shadow:0 1px 2px var(--tsl-shadow);}';
 
   connectedCallback() {
     super.connectedCallback();
-    installTableStyles();
+    adoptLightStyles(this.getRootNode());
     if (this._built) return;
     this._built = true;
-    this.shadowRoot.appendChild(document.createElement('slot'));
+    this.shadowRoot.appendChild(h('slot'));
+
+    this.addEventListener('click', (e) => {
+      const cell = e.composedPath().find((n) => n instanceof HTMLElement && (n.tagName === 'TD' || n.tagName === 'TH'));
+      if (!cell) return;
+      if (cell.tagName === 'TH' && this.hasAttribute('sortable')) this._sortBy(cell);
+      const row = cell.parentElement;
+      if (cell.tagName === 'TD' && this.hasAttribute('selectable') && row.parentElement?.tagName === 'TBODY') {
+        for (const r of row.parentElement.rows) r.removeAttribute('aria-selected');
+        row.setAttribute('aria-selected', 'true');
+        this.emit('change', { row, index: row.sectionRowIndex });
+      }
+    });
+  }
+
+  _sortBy(th) {
+    const table = this.querySelector('table');
+    const body = table?.tBodies[0];
+    if (!body) return;
+    const column = th.cellIndex;
+    const direction = th.getAttribute('aria-sort') === 'ascending' ? 'descending' : 'ascending';
+    for (const other of th.parentElement.cells) other.removeAttribute('aria-sort');
+    th.setAttribute('aria-sort', direction);
+    const text = (row) => (row.cells[column]?.textContent ?? '').trim();
+    const rows = Array.from(body.rows);
+    const numeric = rows.every((r) => text(r) !== '' && !Number.isNaN(Number(text(r))));
+    rows.sort((a, b) => {
+      const cmp = numeric ? Number(text(a)) - Number(text(b)) : text(a).localeCompare(text(b), undefined, { numeric: true, sensitivity: 'base' });
+      return direction === 'ascending' ? cmp : -cmp;
+    });
+    body.append(...rows);
+    this.emit('sort', { column, direction });
   }
 }
 

@@ -1,58 +1,41 @@
 // <tsl-checkbox [checked] [indeterminate] [disabled]>Label</tsl-checkbox>
-// Port of TesselCheckBoxUI / TesselIcons.CheckBoxIcon (20x20 box, radius 4, 1.5px stroke).
+// Port of TesselCheckBoxUI / TesselIcons.CheckBoxIcon and Tessel.NET's CheckBox.xaml
+// (20x20 box, radius 4, 1.5px stroke). The native <input> stays in the tree (visually hidden) for
+// keyboard, focus and accessibility; the visible box is restyled per state with Tailwind classes.
 
 import { TesselElement, define } from '../core/base-element.js';
 import { checkmarkSvg } from '../core/icons.js';
+import { h, html, cx } from '../core/dom.js';
 
-const STYLES = `
-  :host{display:inline-flex;}
-  label{display:inline-flex;align-items:center;gap:10px;cursor:pointer;padding:4px 2px;user-select:none;}
-  :host([disabled]) label{cursor:default;}
-  input{position:absolute;opacity:0;width:20px;height:20px;margin:0;}
-  .box{position:relative;flex:none;width:20px;height:20px;border-radius:4px;border:1.5px solid var(--tsl-text-tertiary);
-    background:var(--tsl-input-bg);display:flex;align-items:center;justify-content:center;color:var(--tsl-on-accent);
-    transition:background var(--tsl-duration-fast) var(--tsl-ease), border-color var(--tsl-duration-fast) var(--tsl-ease);}
-  .box svg{width:13px;height:13px;opacity:0;transform:scale(0.6);transition:opacity var(--tsl-duration-fast) var(--tsl-ease), transform var(--tsl-duration-fast) var(--tsl-ease);}
-  .dash{position:absolute;width:10px;height:2px;border-radius:1px;background:currentColor;opacity:0;transform:scale(0.6);
-    transition:opacity var(--tsl-duration-fast) var(--tsl-ease), transform var(--tsl-duration-fast) var(--tsl-ease);}
-  label:hover .box{border-color:var(--tsl-text-secondary);background:var(--tsl-control-hover);}
-  input:checked ~ .box, input:indeterminate ~ .box{background:var(--tsl-accent);border-color:var(--tsl-accent);}
-  label:hover input:checked ~ .box, label:hover input:indeterminate ~ .box{background:var(--tsl-accent-hover);border-color:var(--tsl-accent-hover);}
-  input:checked ~ .box svg{opacity:1;transform:scale(1);}
-  input:indeterminate ~ .box .dash{opacity:1;transform:scale(1);}
-  input:focus-visible ~ .box{outline:2px solid var(--tsl-accent);outline-offset:2px;}
-  :host([disabled]) .box{opacity:var(--tsl-disabled-alpha);}
-  :host([disabled]) label{pointer-events:none;}
-  .text{font-size:14px;color:var(--tsl-text);line-height:20px;}
-`;
+const LABEL = 'group inline-flex items-center gap-2.5 px-0.5 py-1 cursor-pointer select-none host-[disabled]:pointer-events-none';
+const BOX = 'relative flex flex-none size-5 items-center justify-center rounded-sm border-[1.5px] text-on-accent '
+  + 'transition-colors duration-fast ease-tessel peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 '
+  + 'peer-focus-visible:outline-accent host-[disabled]:opacity-45';
+const BOX_OFF = 'border-text-tertiary bg-input group-hover:border-text-secondary group-hover:bg-control-hover';
+const BOX_ON = 'border-accent bg-accent group-hover:border-accent-hover group-hover:bg-accent-hover';
+const MARK = 'size-[13px] transition-[opacity,transform] duration-fast ease-tessel';
+const DASH = 'absolute w-2.5 h-0.5 rounded-[1px] bg-current transition-[opacity,transform] duration-fast ease-tessel';
+const SHOWN = 'opacity-100 scale-100';
+const HIDDEN = 'opacity-0 scale-60';
 
 export class TesselCheckbox extends TesselElement {
-  static styles = STYLES;
+  static styles = ':host{display:inline-flex;}';
   static observedAttributes = ['disabled', 'checked', 'indeterminate'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const label = document.createElement('label');
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    const box = document.createElement('span');
-    box.className = 'box';
-    box.innerHTML = checkmarkSvg(14, 2.2);
-    const dash = document.createElement('span');
-    dash.className = 'dash';
-    box.appendChild(dash);
-    const text = document.createElement('span');
-    text.className = 'text';
-    text.appendChild(document.createElement('slot'));
-    label.append(input, box, text);
-    this.shadowRoot.appendChild(label);
-    this._input = input;
-
+    this._input = h('input', 'peer sr-only', { type: 'checkbox' });
+    this._check = html('span', MARK, checkmarkSvg(13, 2.2));
+    this._dash = h('span', DASH);
+    this._box = h('span', '', null, this._check, this._dash);
+    this.shadowRoot.appendChild(
+      h('label', LABEL, null, this._input, this._box, h('span', 'text-body text-text', null, h('slot'))),
+    );
     this._sync();
-    input.addEventListener('change', () => {
-      this.checked = input.checked;
+    this._input.addEventListener('change', () => {
+      this.checked = this._input.checked;
       this.indeterminate = false;
       this.emit('change', { checked: this.checked });
     });
@@ -64,9 +47,14 @@ export class TesselCheckbox extends TesselElement {
   }
 
   _sync() {
-    this._input.checked = this.hasAttribute('checked');
-    this._input.indeterminate = this.hasAttribute('indeterminate');
+    const checked = this.hasAttribute('checked');
+    const indeterminate = this.hasAttribute('indeterminate');
+    this._input.checked = checked;
+    this._input.indeterminate = indeterminate;
     this._input.disabled = this.disabled;
+    this._box.className = cx(BOX, checked || indeterminate ? BOX_ON : BOX_OFF);
+    this._check.className = cx(MARK, checked && !indeterminate ? SHOWN : HIDDEN);
+    this._dash.className = cx(DASH, indeterminate ? SHOWN : HIDDEN);
   }
 
   get checked() { return this.hasAttribute('checked'); }

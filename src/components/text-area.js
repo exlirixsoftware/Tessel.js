@@ -1,54 +1,52 @@
-// <tsl-text-area placeholder rows="4" value>...</tsl-text-area> — port of TesselTextAreaUI.
+// <tsl-text-area placeholder rows="4" value header>...</tsl-text-area> — port of TesselTextAreaUI.
 
 import { TesselElement, define } from '../core/base-element.js';
+import { h } from '../core/dom.js';
 
-const STYLES = `
-  :host{display:inline-flex;width:280px;}
-  .field{position:relative;display:flex;width:100%;border-radius:var(--tsl-radius-md);border:1px solid var(--tsl-border);
-    background:var(--tsl-input-bg);overflow:hidden;transition:border-color var(--tsl-duration-fast) var(--tsl-ease);}
-  .field:hover{border-color:var(--tsl-border-strong);}
-  .field.focused{border-color:var(--tsl-accent);}
-  textarea{flex:1;border:none;background:transparent;outline:none;font:inherit;font-size:14px;color:var(--tsl-text);
-    padding:6px 10px;resize:vertical;min-height:64px;line-height:1.4;}
-  textarea::placeholder{color:var(--tsl-text-tertiary);}
-  :host([disabled]) .field{opacity:var(--tsl-disabled-alpha);}
-`;
+const HEADER = 'mb-1.5 block text-body font-medium text-text';
+const FIELD = 'relative flex w-full overflow-hidden rounded-md border border-border bg-input transition-colors duration-fast ease-tessel '
+  + 'hover:border-border-strong focus-within:border-accent hover:focus-within:border-accent host-[disabled]:opacity-45 host-[disabled]:pointer-events-none '
+  + 'after:absolute after:inset-x-px after:bottom-0 after:h-0 after:bg-accent after:transition-[height] after:duration-fast after:ease-tessel focus-within:after:h-0.5';
+const TEXTAREA = 'min-h-16 flex-1 resize-y bg-transparent px-2.5 py-1.5 text-body text-text outline-none placeholder:text-text-tertiary';
 
 export class TesselTextArea extends TesselElement {
-  static styles = STYLES;
-  static observedAttributes = ['disabled', 'placeholder', 'rows', 'value', 'readonly'];
+  static styles = ':host{display:inline-flex;flex-direction:column;width:280px;}';
+  static observedAttributes = ['disabled', 'placeholder', 'rows', 'value', 'readonly', 'header', 'name', 'maxlength'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const field = document.createElement('div');
-    field.className = 'field';
-    const textarea = document.createElement('textarea');
+    this._header = h('label', HEADER);
+    this._textarea = h('textarea', TEXTAREA);
     const initial = this.getAttribute('value') ?? this.textContent.trim();
-    if (initial) textarea.value = initial;
-    field.appendChild(textarea);
-    this.shadowRoot.appendChild(field);
-    this._field = field;
-    this._textarea = textarea;
+    if (initial) this._textarea.value = initial;
+    this.shadowRoot.append(this._header, h('div', FIELD, null, this._textarea));
     this._sync();
 
-    textarea.addEventListener('focus', () => field.classList.add('focused'));
-    textarea.addEventListener('blur', () => field.classList.remove('focused'));
-    textarea.addEventListener('input', () => this.emit('input', { value: textarea.value }));
-    textarea.addEventListener('change', () => this.emit('change', { value: textarea.value }));
+    this._textarea.addEventListener('input', () => this.emit('input', { value: this._textarea.value }));
+    this._textarea.addEventListener('change', () => this.emit('change', { value: this._textarea.value }));
   }
 
   attributeChangedCallback(name, oldV, newV) {
     super.attributeChangedCallback?.(name, oldV, newV);
-    if (this._built) this._sync();
+    if (this._built) this._sync(name);
   }
 
-  _sync() {
-    this._textarea.placeholder = this.getAttribute('placeholder') || '';
-    this._textarea.rows = Number(this.getAttribute('rows')) || 4;
-    this._textarea.disabled = this.disabled;
-    this._textarea.readOnly = this.hasAttribute('readonly');
+  _sync(changed) {
+    const ta = this._textarea;
+    ta.placeholder = this.getAttribute('placeholder') || '';
+    ta.rows = Number(this.getAttribute('rows')) || 4;
+    ta.disabled = this.disabled;
+    ta.readOnly = this.hasAttribute('readonly');
+    for (const attr of ['name', 'maxlength']) {
+      if (this.hasAttribute(attr)) ta.setAttribute(attr, this.getAttribute(attr));
+      else ta.removeAttribute(attr);
+    }
+    if (changed === 'value' && this.hasAttribute('value')) ta.value = this.getAttribute('value');
+    const header = this.getAttribute('header');
+    this._header.textContent = header || '';
+    this._header.hidden = !header;
   }
 
   get value() { return this._textarea ? this._textarea.value : ''; }

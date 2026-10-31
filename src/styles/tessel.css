@@ -1,0 +1,36 @@
+/*
+ * Tessel.js — Tailwind CSS v4 entry.
+ *
+ * Every component builds its shadow DOM with Tailwind utility classes. `npm run build:css` compiles this
+ * file (scanning src/components and src/core for class names) into src/styles/tailwind.generated.js,
+ * which every shadow root adopts as one shared constructable stylesheet. The generated file is committed,
+ * so using Tessel.js still needs no build step — Tailwind is a maintainer-side devDependency only.
+ */
+
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@plugin "../../scripts/tailwind-host-variant.js";
+
+@source "../components";
+@source "../core";
+
+@import "./theme.css";
+
+@layer base {
+  :host {
+    display: inline-block;
+    color: var(--tsl-text);
+    font-family: var(--tsl-font);
+    font-size: 14px;
+    line-height: 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Native <button>/<input> inside the shadow tree pick up the Tessel font like everything else. */
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus { outline: none; }
+  ::selection { background: var(--tsl-accent); color: var(--tsl-on-accent); }
+}

@@ -1,54 +1,38 @@
-// <tsl-switch [checked] [disabled]>Label</tsl-switch> — port of components/ToggleSwitch.java
-// (40x20 track, fully rounded, 12px knob, CSS transition standing in for the 15ms-tick Java animation).
+// <tsl-switch [checked] [disabled]>Label</tsl-switch> — port of components/ToggleSwitch.java and
+// Tessel.NET's ToggleSwitch (40x20 track, fully rounded, 12px knob, CSS transition standing in for the
+// 15ms-tick Java animation).
 
 import { TesselElement, define } from '../core/base-element.js';
+import { h, cx } from '../core/dom.js';
 
-const STYLES = `
-  :host{display:inline-flex;}
-  label{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
-  input{position:absolute;opacity:0;width:40px;height:20px;margin:0;}
-  .track{position:relative;flex:none;width:40px;height:20px;border-radius:999px;background:var(--tsl-input-bg);
-    border:1.5px solid var(--tsl-text-secondary);transition:background var(--tsl-duration-base) var(--tsl-ease),
-      border-color var(--tsl-duration-base) var(--tsl-ease);}
-  .knob{position:absolute;top:3px;left:4px;width:12px;height:12px;border-radius:50%;background:var(--tsl-text-secondary);
-    transition:transform var(--tsl-duration-base) var(--tsl-ease), background var(--tsl-duration-base) var(--tsl-ease),
-      width var(--tsl-duration-fast) var(--tsl-ease), height var(--tsl-duration-fast) var(--tsl-ease);}
-  label:hover .track{background:var(--tsl-control-hover);}
-  input:checked ~ .track{background:var(--tsl-accent);border-color:var(--tsl-accent);}
-  label:hover input:checked ~ .track{background:var(--tsl-accent-hover);border-color:var(--tsl-accent-hover);}
-  input:checked ~ .track .knob{transform:translateX(20px);background:var(--tsl-on-accent);}
-  label:active .knob{width:14px;}
-  input:focus-visible ~ .track{outline:2px solid var(--tsl-accent);outline-offset:3px;}
-  :host([disabled]) label{pointer-events:none;}
-  :host([disabled]) .track{opacity:var(--tsl-disabled-alpha);}
-  .text{font-size:14px;color:var(--tsl-text);}
-`;
+const LABEL = 'group inline-flex items-center gap-2.5 cursor-pointer select-none host-[disabled]:pointer-events-none';
+const TRACK = 'relative flex-none w-10 h-5 rounded-pill border-[1.5px] transition-colors duration-base ease-tessel '
+  + 'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-3 peer-focus-visible:outline-accent host-[disabled]:opacity-45';
+const TRACK_OFF = 'border-text-secondary bg-input group-hover:bg-control-hover';
+const TRACK_ON = 'border-accent bg-accent group-hover:border-accent-hover group-hover:bg-accent-hover';
+// 4px inset on both ends: the 37px inner track minus 12px knob leaves 25px, so it travels 17px.
+const KNOB = 'absolute left-1 top-1/2 -translate-y-1/2 h-3 rounded-full group-active:w-3.5 w-3 '
+  + 'transition-[transform,background-color,width] duration-base ease-tessel';
+const KNOB_OFF = 'bg-text-secondary';
+const KNOB_ON = 'bg-on-accent translate-x-[17px]';
 
 export class TesselSwitch extends TesselElement {
-  static styles = STYLES;
+  static styles = ':host{display:inline-flex;}';
   static observedAttributes = ['disabled', 'checked'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const label = document.createElement('label');
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    const track = document.createElement('span');
-    track.className = 'track';
-    const knob = document.createElement('span');
-    knob.className = 'knob';
-    track.appendChild(knob);
-    const text = document.createElement('span');
-    text.className = 'text';
-    text.appendChild(document.createElement('slot'));
-    label.append(input, track, text);
-    this.shadowRoot.appendChild(label);
-    this._input = input;
+    this._input = h('input', 'peer sr-only', { type: 'checkbox', role: 'switch' });
+    this._knob = h('span', KNOB);
+    this._track = h('span', '', null, this._knob);
+    this.shadowRoot.appendChild(
+      h('label', LABEL, null, this._input, this._track, h('span', 'text-body text-text', null, h('slot'))),
+    );
     this._sync();
-    input.addEventListener('change', () => {
-      this.checked = input.checked;
+    this._input.addEventListener('change', () => {
+      this.checked = this._input.checked;
       this.emit('change', { checked: this.checked });
     });
   }
@@ -59,8 +43,11 @@ export class TesselSwitch extends TesselElement {
   }
 
   _sync() {
-    this._input.checked = this.hasAttribute('checked');
+    const checked = this.hasAttribute('checked');
+    this._input.checked = checked;
     this._input.disabled = this.disabled;
+    this._track.className = cx(TRACK, checked ? TRACK_ON : TRACK_OFF);
+    this._knob.className = cx(KNOB, checked ? KNOB_ON : KNOB_OFF);
   }
 
   get checked() { return this.hasAttribute('checked'); }

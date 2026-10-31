@@ -1,0 +1,41 @@
+/*
+ * Tessel.js — Tailwind CSS v4 entry for the few rules that must live in the *light* DOM.
+ *
+ * `::slotted()` can only match the slotted node itself, never its descendants, so a user-authored
+ * <table> inside <tsl-table> can't be styled from the component's shadow root. This sheet is compiled
+ * to src/styles/light.generated.js and adopted by whatever root the element lives in (the document, or
+ * another component's shadow root). Every selector starts with the `tsl-table` tag so it can't leak
+ * onto unrelated tables. No preflight here — nothing outside Tessel elements is reset.
+ */
+
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "./theme.css";
+
+@layer components {
+  tsl-table > table {
+    @apply w-full border-collapse text-body text-text;
+    border-spacing: 0;
+  }
+  tsl-table > table > thead > tr > th {
+    @apply sticky top-0 border-b border-border bg-subtle px-5 py-3 text-left text-xs font-bold uppercase tracking-wider text-text-secondary;
+  }
+  tsl-table > table > thead > tr > th:first-child { @apply rounded-tl-lg; }
+  tsl-table > table > thead > tr > th:last-child { @apply rounded-tr-lg; }
+  tsl-table[sortable] > table > thead > tr > th { @apply cursor-pointer select-none hover:bg-control-hover; }
+  tsl-table > table > thead > tr > th[aria-sort="ascending"]::after { content: " \2191"; }
+  tsl-table > table > thead > tr > th[aria-sort="descending"]::after { content: " \2193"; }
+  tsl-table > table > tbody > tr {
+    @apply transition-colors duration-fast ease-tessel hover:bg-control-hover;
+  }
+  tsl-table > table > tbody > tr:nth-child(even) { @apply bg-surface-alt hover:bg-control-hover; }
+  tsl-table > table > tbody > tr > td { @apply h-11 border-b border-border px-5; }
+  tsl-table > table > tbody > tr:last-child > td { @apply border-b-0; }
+  tsl-table > table > tbody > tr:last-child > td:first-child { @apply rounded-bl-lg; }
+  tsl-table > table > tbody > tr:last-child > td:last-child { @apply rounded-br-lg; }
+  tsl-table[selectable] > table > tbody > tr { @apply cursor-pointer; }
+  tsl-table > table > tbody > tr[aria-selected="true"],
+  tsl-table > table > tbody > tr[aria-selected="true"]:nth-child(even) { @apply bg-accent-subtle; }
+}

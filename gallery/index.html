@@ -4,23 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tessel.js Gallery</title>
-<style>
-  html, body { margin: 0; padding: 0; height: 100%; }
-  tsl-nav-view { height: 100vh; }
-  .page { display: flex; flex-direction: column; gap: 28px; max-width: 900px; }
-  .section-title { margin: 0 0 4px; }
-  .section-desc { margin: 0 0 12px; }
-  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-  .row.column { flex-direction: column; align-items: flex-start; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 4px; }
-  .icon-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px;
-    border-radius: 8px; }
-  .icon-cell:hover { background: var(--tsl-control-hover); }
-  .icon-cell span { font-size: 11px; color: var(--tsl-text-secondary); text-align: center; word-break: break-word; }
-  .swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
-  .swatch.active { border-color: var(--tsl-text); }
-  code.inline { font-family: var(--tsl-font-mono); background: var(--tsl-subtle); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-</style>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./gallery.generated.css">
 </head>
 <body>
 
@@ -35,48 +20,117 @@
   <tsl-nav-item value="feedback" icon="ringer">Feedback</tsl-nav-item>
   <tsl-nav-item value="layout" icon="view-all">Layout</tsl-nav-item>
   <tsl-nav-item value="menus" icon="more">Menus</tsl-nav-item>
+  <tsl-nav-item value="navigation" icon="global-nav">Navigation</tsl-nav-item>
+  <tsl-nav-item value="dialogs" icon="comment">Dialogs</tsl-nav-item>
+  <tsl-nav-item value="animation" icon="video">Animation</tsl-nav-item>
   <tsl-nav-item value="icons" icon="emoji">Icons</tsl-nav-item>
   <tsl-nav-item value="design" icon="color" footer>Design</tsl-nav-item>
 
   <!-- ---------------------------------------------------------------- Home -->
   <tsl-nav-page value="home">
     <div class="page">
-      <tsl-text variant="title">Tessel.js</tsl-text>
-      <tsl-text variant="secondary">
-        A pure-JavaScript port of Tessel4J's Fluent-inspired look and feel — the same design tokens,
-        component set and behavior, rebuilt as framework-free Web Components for the browser.
-      </tsl-text>
+      <div class="section">
+        <tsl-text variant="title">Tessel.js</tsl-text>
+        <tsl-text variant="secondary">
+          Fluent-inspired Web Components in plain JavaScript — the same design tokens, palette and control set as
+          Tessel.NET, styled with Tailwind CSS and shipped as framework-free custom elements.
+        </tsl-text>
+      </div>
       <tsl-card header="Getting started">
-        <tsl-text variant="body">Import the entry module once, then use the tags directly in HTML:</tsl-text>
-        <pre style="background:var(--tsl-subtle);padding:12px;border-radius:8px;overflow:auto;font-size:13px;"><code>&lt;script type="module" src="tessel/src/tessel.js"&gt;&lt;/script&gt;
-&lt;tsl-button variant="accent"&gt;Save&lt;/tsl-button&gt;</code></pre>
+        <div class="fill">
+          <tsl-text variant="body">Import the entry module once, then use the tags directly in HTML:</tsl-text>
+          <pre class="code"><code>&lt;script type="module" src="tessel/src/tessel.js"&gt;&lt;/script&gt;
+
+&lt;tsl-button variant="accent"&gt;Save&lt;/tsl-button&gt;
+&lt;tsl-date-picker header="Due date"&gt;&lt;/tsl-date-picker&gt;</code></pre>
+        </div>
       </tsl-card>
-      <tsl-info-bar severity="informational" title="No build step">
-        Every component is a native custom element with an encapsulated shadow DOM — no bundler, no framework, no dependencies.
+      <tsl-info-bar severity="informational" heading="No build step to use it" class="w-full">
+        Every component is a native custom element with its own shadow DOM. Tailwind is compiled ahead of time into
+        one shared stylesheet that ships inside the package — consumers need no bundler, no framework and no CSS tooling.
       </tsl-info-bar>
+      <tsl-card header="What's in the box">
+        <div class="row">
+          <tsl-badge kind="accent">60+ controls</tsl-badge>
+          <tsl-badge kind="success">Light · Dark · System</tsl-badge>
+          <tsl-badge kind="info">Custom accent</tsl-badge>
+          <tsl-badge kind="warning">Keyboard accessible</tsl-badge>
+          <tsl-badge>Tailwind CSS v4</tsl-badge>
+        </div>
+      </tsl-card>
     </div>
   </tsl-nav-page>
 
   <!-- ------------------------------------------------------------- Buttons -->
   <tsl-nav-page value="buttons">
     <div class="page">
-      <div>
-        <tsl-text variant="header" class="section-title">Buttons</tsl-text>
-        <tsl-text variant="secondary" class="section-desc">Every ButtonStyle from ButtonPainter.java.</tsl-text>
+      <div class="section">
+        <tsl-text variant="header">Buttons</tsl-text>
+        <tsl-text variant="secondary">Every button variant, plus toggle, drop-down and split buttons and chips.</tsl-text>
       </div>
-      <div class="row">
-        <tsl-button variant="standard">Standard</tsl-button>
-        <tsl-button variant="accent">Accent</tsl-button>
-        <tsl-button variant="outline">Outline</tsl-button>
-        <tsl-button variant="subtle">Subtle</tsl-button>
-        <tsl-button variant="danger">Danger</tsl-button>
-        <tsl-button variant="icon" icon="settings" title="Icon button"></tsl-button>
-        <tsl-button variant="link">Link style</tsl-button>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Variants</tsl-text>
+        <div class="row">
+          <tsl-button variant="standard">Standard</tsl-button>
+          <tsl-button variant="accent">Accent</tsl-button>
+          <tsl-button variant="outline">Outline</tsl-button>
+          <tsl-button variant="subtle">Subtle</tsl-button>
+          <tsl-button variant="danger">Danger</tsl-button>
+          <tsl-button variant="icon" icon="settings" title="Icon button"></tsl-button>
+          <tsl-button variant="link">Link style</tsl-button>
+        </div>
+        <div class="row">
+          <tsl-button variant="accent" icon="save">With icon</tsl-button>
+          <tsl-button variant="standard" disabled>Disabled</tsl-button>
+          <tsl-button variant="accent" disabled>Disabled</tsl-button>
+        </div>
       </div>
-      <div class="row">
-        <tsl-button variant="accent" icon="save">With icon</tsl-button>
-        <tsl-button variant="standard" disabled>Disabled</tsl-button>
-        <tsl-button variant="accent" disabled>Disabled</tsl-button>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Toggle &amp; menu buttons</tsl-text>
+        <div class="row">
+          <tsl-toggle-button icon="favorite-star">Favourite</tsl-toggle-button>
+          <tsl-toggle-button checked icon="pin">Pinned</tsl-toggle-button>
+          <tsl-dropdown-button label="Share" icon="share" id="dropDown">
+            <tsl-menu-item value="mail" icon="mail">Email</tsl-menu-item>
+            <tsl-menu-item value="link" icon="link">Copy link</tsl-menu-item>
+            <tsl-menu-separator></tsl-menu-separator>
+            <tsl-menu-item value="print" icon="print" shortcut="Ctrl+P">Print</tsl-menu-item>
+          </tsl-dropdown-button>
+          <tsl-split-button label="Send" icon="send" id="splitBtn">
+            <tsl-menu-item value="later">Send later</tsl-menu-item>
+            <tsl-menu-item value="draft" icon="save">Save as draft</tsl-menu-item>
+          </tsl-split-button>
+          <tsl-split-button label="Accent split" variant="accent">
+            <tsl-menu-item value="a">Option A</tsl-menu-item>
+            <tsl-menu-item value="b">Option B</tsl-menu-item>
+          </tsl-split-button>
+          <tsl-toggle-split-button label="Bold" icon="font">
+            <tsl-menu-checkbox-item value="italic">Italic</tsl-menu-checkbox-item>
+            <tsl-menu-checkbox-item value="underline">Underline</tsl-menu-checkbox-item>
+          </tsl-toggle-split-button>
+        </div>
+        <tsl-text variant="caption" id="buttonLog">Click something…</tsl-text>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Chips</tsl-text>
+        <div class="row" id="chipRow">
+          <tsl-chip removable>WPF</tsl-chip>
+          <tsl-chip removable icon="tag">Fluent</tsl-chip>
+          <tsl-chip selectable checked>Unread</tsl-chip>
+          <tsl-chip selectable icon="flag">Flagged</tsl-chip>
+          <tsl-chip>Plain</tsl-chip>
+        </div>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Tooltips</tsl-text>
+        <div class="row">
+          <tsl-button id="tipBtn" icon="help">Hover or focus me</tsl-button>
+          <tsl-tooltip for="#tipBtn" placement="bottom">Tooltips appear above the keyboard focus, too.</tsl-tooltip>
+        </div>
       </div>
     </div>
   </tsl-nav-page>
@@ -84,20 +138,60 @@
   <!-- -------------------------------------------------------------- Inputs -->
   <tsl-nav-page value="inputs">
     <div class="page">
-      <tsl-text variant="header">Inputs</tsl-text>
-      <div class="row column">
-        <tsl-text-field placeholder="name@example.com" icon="mail"></tsl-text-field>
-        <tsl-text-field type="password" placeholder="Password"></tsl-text-field>
+      <div class="section">
+        <tsl-text variant="header">Inputs</tsl-text>
+        <tsl-text variant="secondary">Text, numeric, suggestion, date, time and color inputs. Most take a <code>header</code> label.</tsl-text>
+      </div>
+
+      <div class="stack">
+        <tsl-text-field header="Email" placeholder="name@example.com" icon="mail" clearable value="ada@example.com"></tsl-text-field>
+        <tsl-text-field header="Password" type="password" placeholder="Password"></tsl-text-field>
         <tsl-text-field placeholder="Disabled" disabled></tsl-text-field>
-        <tsl-text-area placeholder="Write a description…" rows="4"></tsl-text-area>
-        <div class="row">
-          <tsl-number-box value="3" min="0" max="10"></tsl-number-box>
-          <tsl-select placeholder="Choose a fruit" id="fruitSelect">
+        <tsl-text-area header="Description" placeholder="Write a description…" rows="3"></tsl-text-area>
+        <div class="row items-end">
+          <tsl-number-box header="Quantity" value="3" min="0" max="10"></tsl-number-box>
+          <tsl-select header="Fruit" placeholder="Choose a fruit" id="fruitSelect">
             <tsl-option value="apple">Apple</tsl-option>
             <tsl-option value="banana">Banana</tsl-option>
             <tsl-option value="cherry">Cherry</tsl-option>
             <tsl-option value="date" disabled>Date (out of stock)</tsl-option>
           </tsl-select>
+        </div>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Auto-suggest</tsl-text>
+        <div class="row items-end">
+          <tsl-auto-suggest header="City" placeholder="Search cities…" id="citySuggest" local></tsl-auto-suggest>
+          <tsl-text variant="caption" id="suggestLog">Type to filter, Enter to submit.</tsl-text>
+        </div>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Pickers</tsl-text>
+        <div class="row items-end">
+          <tsl-date-picker header="Date" placeholder="Pick a date" id="datePick"></tsl-date-picker>
+          <tsl-time-picker header="Time" value="14:30" minute-increment="5" id="timePick"></tsl-time-picker>
+          <tsl-time-picker header="24-hour" value="09:05" hour24></tsl-time-picker>
+        </div>
+        <tsl-text variant="caption" id="pickerLog">Pick something…</tsl-text>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Color picker</tsl-text>
+        <div class="row items-start">
+          <tsl-color-picker value="#4f46e5" id="colorPick"></tsl-color-picker>
+          <tsl-color-picker value="#0891b2cc" alpha></tsl-color-picker>
+          <div class="stage h-24 w-40" id="colorStage"><tsl-text variant="body-strong">Preview</tsl-text></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Rating</tsl-text>
+        <div class="row items-start">
+          <tsl-rating value="3" caption="Your rating" id="rating"></tsl-rating>
+          <tsl-rating value="4" read-only caption="Read only"></tsl-rating>
+          <tsl-rating value="2" max="7" clearable caption="Clearable · 7 stars"></tsl-rating>
         </div>
       </div>
     </div>
@@ -107,21 +201,45 @@
   <tsl-nav-page value="selection">
     <div class="page">
       <tsl-text variant="header">Selection</tsl-text>
-      <div class="row column">
-        <tsl-checkbox checked>Send me updates</tsl-checkbox>
-        <tsl-checkbox indeterminate>Select all (partially)</tsl-checkbox>
-        <tsl-checkbox disabled>Disabled</tsl-checkbox>
+      <div class="row items-start gap-12">
+        <div class="stack gap-1">
+          <tsl-checkbox checked>Send me updates</tsl-checkbox>
+          <tsl-checkbox indeterminate>Select all (partially)</tsl-checkbox>
+          <tsl-checkbox>Not checked</tsl-checkbox>
+          <tsl-checkbox disabled>Disabled</tsl-checkbox>
+        </div>
+        <tsl-radio-group value="b">
+          <tsl-radio value="a">Option A</tsl-radio>
+          <tsl-radio value="b">Option B</tsl-radio>
+          <tsl-radio value="c">Option C</tsl-radio>
+          <tsl-radio value="d" disabled>Option D</tsl-radio>
+        </tsl-radio-group>
+        <div class="stack gap-2">
+          <tsl-switch checked>Notifications</tsl-switch>
+          <tsl-switch>Airplane mode</tsl-switch>
+          <tsl-switch disabled checked>Disabled</tsl-switch>
+        </div>
       </div>
-      <tsl-radio-group value="b">
-        <tsl-radio value="a">Option A</tsl-radio>
-        <tsl-radio value="b">Option B</tsl-radio>
-        <tsl-radio value="c">Option C</tsl-radio>
-      </tsl-radio-group>
-      <div class="row">
-        <tsl-switch checked>Notifications</tsl-switch>
-        <tsl-switch>Airplane mode</tsl-switch>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Slider</tsl-text>
+        <div class="row">
+          <tsl-slider min="0" max="100" value="40" class="w-72" id="slider"></tsl-slider>
+          <tsl-text variant="secondary" id="sliderValue">40</tsl-text>
+        </div>
       </div>
-      <tsl-slider min="0" max="100" value="40" style="width:280px"></tsl-slider>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Segmented control</tsl-text>
+        <div class="row">
+          <tsl-segmented value="week" id="segmented">
+            <tsl-segment value="day" icon="calendar">Day</tsl-segment>
+            <tsl-segment value="week">Week</tsl-segment>
+            <tsl-segment value="month">Month</tsl-segment>
+          </tsl-segmented>
+          <tsl-text variant="secondary" id="segLog">Week</tsl-text>
+        </div>
+      </div>
     </div>
   </tsl-nav-page>
 
@@ -129,34 +247,40 @@
   <tsl-nav-page value="collections">
     <div class="page">
       <tsl-text variant="header">Collections</tsl-text>
-      <tsl-list value="b" style="width:260px">
-        <tsl-list-item value="a">Inbox</tsl-list-item>
-        <tsl-list-item value="b">Drafts</tsl-list-item>
-        <tsl-list-item value="c">Sent</tsl-list-item>
-        <tsl-list-item value="d" disabled>Archived (disabled)</tsl-list-item>
-      </tsl-list>
+      <div class="row items-start gap-8">
+        <tsl-list value="b" class="w-64">
+          <tsl-list-item value="a">Inbox</tsl-list-item>
+          <tsl-list-item value="b">Drafts</tsl-list-item>
+          <tsl-list-item value="c">Sent</tsl-list-item>
+          <tsl-list-item value="d" disabled>Archived (disabled)</tsl-list-item>
+        </tsl-list>
 
-      <tsl-tree style="width:280px">
-        <tsl-tree-item label="src" expanded>
-          <tsl-tree-item label="components" expanded>
-            <tsl-tree-item label="button.js"></tsl-tree-item>
-            <tsl-tree-item label="card.js"></tsl-tree-item>
+        <tsl-tree class="w-72">
+          <tsl-tree-item label="src" expanded>
+            <tsl-tree-item label="components" expanded>
+              <tsl-tree-item label="button.js"></tsl-tree-item>
+              <tsl-tree-item label="card.js"></tsl-tree-item>
+            </tsl-tree-item>
+            <tsl-tree-item label="tessel.js"></tsl-tree-item>
           </tsl-tree-item>
-          <tsl-tree-item label="tessel.js"></tsl-tree-item>
-        </tsl-tree-item>
-        <tsl-tree-item label="README.md"></tsl-tree-item>
-      </tsl-tree>
+          <tsl-tree-item label="README.md"></tsl-tree-item>
+        </tsl-tree>
+      </div>
 
-      <tsl-table>
-        <table>
-          <thead><tr><th>Name</th><th>Role</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td>Ada Lovelace</td><td>Engineer</td><td><tsl-badge kind="success">Active</tsl-badge></td></tr>
-            <tr><td>Alan Turing</td><td>Researcher</td><td><tsl-badge kind="success">Active</tsl-badge></td></tr>
-            <tr><td>Grace Hopper</td><td>Architect</td><td><tsl-badge kind="neutral">Away</tsl-badge></td></tr>
-          </tbody>
-        </table>
-      </tsl-table>
+      <div class="section">
+        <tsl-text variant="body-strong">Table <tsl-badge kind="neutral">selectable · sortable</tsl-badge></tsl-text>
+        <tsl-table selectable sortable>
+          <table>
+            <thead><tr><th>Name</th><th>Role</th><th>Commits</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Ada Lovelace</td><td>Engineer</td><td>128</td><td><tsl-badge kind="success">Active</tsl-badge></td></tr>
+              <tr><td>Alan Turing</td><td>Researcher</td><td>64</td><td><tsl-badge kind="success">Active</tsl-badge></td></tr>
+              <tr><td>Grace Hopper</td><td>Architect</td><td>212</td><td><tsl-badge kind="neutral">Away</tsl-badge></td></tr>
+              <tr><td>Katherine Johnson</td><td>Analyst</td><td>9</td><td><tsl-badge kind="warning">Review</tsl-badge></td></tr>
+            </tbody>
+          </table>
+        </tsl-table>
+      </div>
     </div>
   </tsl-nav-page>
 
@@ -164,19 +288,59 @@
   <tsl-nav-page value="feedback">
     <div class="page">
       <tsl-text variant="header">Feedback</tsl-text>
-      <div class="row column" style="width:100%;">
-        <tsl-info-bar severity="informational" title="Informational" closable>Just so you know.</tsl-info-bar>
-        <tsl-info-bar severity="success" title="Success" closable>Your changes were saved.</tsl-info-bar>
-        <tsl-info-bar severity="warning" title="Warning" closable>Your subscription expires soon.</tsl-info-bar>
-        <tsl-info-bar severity="error" title="Error" closable>Something went wrong.</tsl-info-bar>
+      <div class="fill">
+        <tsl-info-bar severity="informational" heading="Informational" closable>Just so you know.</tsl-info-bar>
+        <tsl-info-bar severity="success" heading="Success" closable>Your changes were saved.</tsl-info-bar>
+        <tsl-info-bar severity="warning" heading="Warning" closable>
+          Your subscription expires soon.
+          <tsl-button slot="action" variant="outline">Renew</tsl-button>
+        </tsl-info-bar>
+        <tsl-info-bar severity="error" heading="Error" closable>Something went wrong.</tsl-info-bar>
       </div>
-      <div class="row">
-        <tsl-button id="snackBtn" variant="standard">Show snackbar</tsl-button>
-        <tsl-button id="dialogBtn" variant="danger">Delete file…</tsl-button>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Snackbar, dialog &amp; teaching tip</tsl-text>
+        <div class="row">
+          <tsl-button id="snackBtn">Show snackbar</tsl-button>
+          <tsl-button id="dialogBtn" variant="danger">Delete file…</tsl-button>
+          <tsl-button id="helpBtn" icon="help">Help flyout</tsl-button>
+          <tsl-button id="tipBtn2" icon="lightbulb" variant="outline">Teaching tip</tsl-button>
+        </div>
+        <tsl-flyout target="#helpBtn" placement="bottom">
+          <div class="fill w-64">
+            <tsl-text variant="body-strong">Need a hand?</tsl-text>
+            <tsl-text variant="secondary">A flyout holds any content and dismisses when you click away or press Escape.</tsl-text>
+            <tsl-button variant="link">Read the docs</tsl-button>
+          </div>
+        </tsl-flyout>
+        <tsl-teaching-tip target="#tipBtn2" placement="bottom" heading="New: teaching tips" subtitle="Point at a control and explain it." icon="lightbulb" action-text="Got it">
+          They carry an icon, title, subtitle, content and an action button.
+        </tsl-teaching-tip>
       </div>
-      <div class="row column" style="width:280px;">
-        <tsl-progress-bar value="65"></tsl-progress-bar>
-        <tsl-progress-bar indeterminate></tsl-progress-bar>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Progress</tsl-text>
+        <div class="fill w-72">
+          <tsl-progress-bar value="65"></tsl-progress-bar>
+          <tsl-progress-bar indeterminate></tsl-progress-bar>
+        </div>
+        <div class="row">
+          <tsl-progress-ring></tsl-progress-ring>
+          <tsl-progress-ring value="65" size="40"></tsl-progress-ring>
+          <tsl-progress-ring value="20" size="24"></tsl-progress-ring>
+        </div>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Skeleton loading</tsl-text>
+        <div class="row items-start">
+          <tsl-skeleton circle height="48"></tsl-skeleton>
+          <div class="fill w-64">
+            <tsl-skeleton width="180" height="16"></tsl-skeleton>
+            <tsl-skeleton height="12"></tsl-skeleton>
+            <tsl-skeleton width="120" height="12"></tsl-skeleton>
+          </div>
+        </div>
       </div>
     </div>
   </tsl-nav-page>
@@ -185,21 +349,29 @@
   <tsl-nav-page value="layout">
     <div class="page">
       <tsl-text variant="header">Layout</tsl-text>
-      <div class="row">
-        <tsl-card header="Profile" style="width:260px;">
-          <tsl-avatar name="Ada Lovelace" size="48"></tsl-avatar>
-          <tsl-text variant="secondary" style="margin-top:10px;">Countess of Lovelace</tsl-text>
+      <div class="row items-start">
+        <tsl-card header="Profile" class="w-64">
+          <div class="fill">
+            <tsl-avatar name="Ada Lovelace" size="48"></tsl-avatar>
+            <tsl-text variant="secondary">Countess of Lovelace</tsl-text>
+          </div>
         </tsl-card>
-        <tsl-card header="Elevated" elevated style="width:260px;">
+        <tsl-card header="Elevated" elevated class="w-64">
           <tsl-text variant="body">This card has a soft drop shadow.</tsl-text>
         </tsl-card>
+        <tsl-group-box header="Options" class="w-64">
+          <div class="stack gap-1">
+            <tsl-checkbox checked>Autosave</tsl-checkbox>
+            <tsl-checkbox>Spell check</tsl-checkbox>
+          </div>
+        </tsl-group-box>
       </div>
 
-      <tsl-settings-card header="Notifications" description="Get alerted on new mentions" icon="ringer" style="width:420px;">
+      <tsl-settings-card header="Notifications" description="Get alerted on new mentions" icon="ringer" class="w-[460px]">
         <tsl-switch checked slot="control"></tsl-switch>
       </tsl-settings-card>
 
-      <tsl-expander header="Advanced settings" style="width:420px;">
+      <tsl-expander header="Advanced settings" class="w-[460px]">
         <tsl-text variant="body">Extra options live in here — the body height and chevron rotation both animate smoothly.</tsl-text>
       </tsl-expander>
 
@@ -216,7 +388,15 @@
         <tsl-avatar name="Ada Lovelace"></tsl-avatar>
         <tsl-avatar name="Alan Turing"></tsl-avatar>
         <tsl-avatar name="Grace Hopper"></tsl-avatar>
-        <tsl-avatar name="Margaret Hamilton"></tsl-avatar>
+        <tsl-avatar name="Margaret Hamilton" size="32"></tsl-avatar>
+        <tsl-separator vertical class="h-8"></tsl-separator>
+        <tsl-toolbar>
+          <tsl-button variant="icon" icon="cut" title="Cut"></tsl-button>
+          <tsl-button variant="icon" icon="copy" title="Copy"></tsl-button>
+          <tsl-button variant="icon" icon="paste" title="Paste"></tsl-button>
+          <tsl-separator vertical class="h-5"></tsl-separator>
+          <tsl-toggle-button icon="font">Bold</tsl-toggle-button>
+        </tsl-toolbar>
       </div>
     </div>
   </tsl-nav-page>
@@ -226,19 +406,20 @@
     <div class="page">
       <tsl-text variant="header">Menus</tsl-text>
       <div class="row">
-        <tsl-menu-button label="File">
-          <tsl-menu-item value="new" icon="add">New</tsl-menu-item>
-          <tsl-menu-item value="open" icon="folder">Open…</tsl-menu-item>
+        <tsl-menu-button label="File" id="fileMenu">
+          <tsl-menu-item value="new" icon="add" shortcut="Ctrl+N">New</tsl-menu-item>
+          <tsl-menu-item value="open" icon="folder" shortcut="Ctrl+O">Open…</tsl-menu-item>
           <tsl-menu-separator></tsl-menu-separator>
-          <tsl-menu-item value="save" icon="save">Save</tsl-menu-item>
+          <tsl-menu-item value="save" icon="save" shortcut="Ctrl+S">Save</tsl-menu-item>
           <tsl-menu-separator></tsl-menu-separator>
           <tsl-menu-checkbox-item value="wrap" checked>Word wrap</tsl-menu-checkbox-item>
         </tsl-menu-button>
         <tsl-menu-button label="More" icon="more" align="right"></tsl-menu-button>
+        <tsl-text variant="secondary" id="menuLog">Use arrow keys in an open menu.</tsl-text>
       </div>
 
-      <tsl-tabs value="a" style="width:420px;">
-        <tsl-tab value="a">Overview</tsl-tab>
+      <tsl-tabs value="a" class="w-[460px]">
+        <tsl-tab value="a" icon="home">Overview</tsl-tab>
         <tsl-tab value="b">Details</tsl-tab>
         <tsl-tab value="c">History</tsl-tab>
         <tsl-tab-panel value="a"><tsl-text variant="body">Overview content.</tsl-text></tsl-tab-panel>
@@ -248,12 +429,160 @@
     </div>
   </tsl-nav-page>
 
+  <!-- ---------------------------------------------------------- Navigation -->
+  <tsl-nav-page value="navigation">
+    <div class="page">
+      <div class="section">
+        <tsl-text variant="header">Navigation</tsl-text>
+        <tsl-text variant="secondary">Breadcrumbs, pagination, steppers, document tabs and timelines.</tsl-text>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Breadcrumb</tsl-text>
+        <tsl-breadcrumb id="crumbs">
+          <tsl-breadcrumb-item value="home">Home</tsl-breadcrumb-item>
+          <tsl-breadcrumb-item value="projects">Projects</tsl-breadcrumb-item>
+          <tsl-breadcrumb-item value="tessel">Tessel.js</tsl-breadcrumb-item>
+          <tsl-breadcrumb-item value="src">src</tsl-breadcrumb-item>
+        </tsl-breadcrumb>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Pagination</tsl-text>
+        <div class="row">
+          <tsl-pagination page="3" count="24" id="pager"></tsl-pagination>
+          <tsl-text variant="secondary" id="pagerLog">Page 3</tsl-text>
+        </div>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Stepper</tsl-text>
+        <tsl-stepper current="1" id="stepper">
+          <tsl-step header="Cart" description="Review your items"></tsl-step>
+          <tsl-step header="Shipping" description="Where to?"></tsl-step>
+          <tsl-step header="Payment" description="Card details"></tsl-step>
+          <tsl-step header="Done"></tsl-step>
+        </tsl-stepper>
+        <div class="row">
+          <tsl-button id="stepBack">Back</tsl-button>
+          <tsl-button id="stepNext" variant="accent">Next</tsl-button>
+        </div>
+        <div class="row items-start gap-12">
+          <tsl-stepper current="1" orientation="vertical">
+            <tsl-step header="Cart" description="Review your items"></tsl-step>
+            <tsl-step header="Payment" description="Card declined" error></tsl-step>
+            <tsl-step header="Done"></tsl-step>
+          </tsl-stepper>
+        </div>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Tab view</tsl-text>
+        <tsl-tab-view value="home" addable reorderable id="tabView">
+          <tsl-tab-view-item value="home" header="Home" icon="home" pinned>Pinned tabs have no close button.</tsl-tab-view-item>
+          <tsl-tab-view-item value="report" header="Report.pdf" icon="document">Close me with the × or a middle-click; drag to reorder.</tsl-tab-view-item>
+          <tsl-tab-view-item value="notes" header="Notes.txt" icon="edit">Notes content.</tsl-tab-view-item>
+        </tsl-tab-view>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Timeline</tsl-text>
+        <div class="row">
+          <tsl-segmented value="standard" id="tlLayout">
+            <tsl-segment value="standard">Standard</tsl-segment>
+            <tsl-segment value="alternate">Alternate</tsl-segment>
+            <tsl-segment value="horizontal">Horizontal</tsl-segment>
+            <tsl-segment value="horizontal-alt">Horizontal alt</tsl-segment>
+          </tsl-segmented>
+        </div>
+        <tsl-timeline id="timeline">
+          <tsl-timeline-item header="Order placed" timestamp="10:02" icon="shop" kind="success">Payment received.</tsl-timeline-item>
+          <tsl-timeline-item header="Packed" timestamp="11:40" icon="library" kind="accent">Warehouse confirmed the package.</tsl-timeline-item>
+          <tsl-timeline-item header="Delayed" timestamp="Yesterday, 18:15" icon="warning" kind="warning">Weather in the area.</tsl-timeline-item>
+          <tsl-timeline-item header="Out for delivery" timestamp="Tomorrow" pending>Expected between 9:00 and 12:00.</tsl-timeline-item>
+        </tsl-timeline>
+      </div>
+    </div>
+  </tsl-nav-page>
+
+  <!-- ------------------------------------------------------------- Dialogs -->
+  <tsl-nav-page value="dialogs">
+    <div class="page">
+      <div class="section">
+        <tsl-text variant="header">Dialogs</tsl-text>
+        <tsl-text variant="secondary">Modal dialogs open inside the page on the browser's top layer and are awaited.</tsl-text>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Content dialog</tsl-text>
+        <div class="row">
+          <tsl-button id="dlgSimple">Simple</tsl-button>
+          <tsl-button id="dlgThree">Three buttons</tsl-button>
+          <tsl-button id="dlgBusy" variant="accent">With progress…</tsl-button>
+        </div>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Message dialog</tsl-text>
+        <div class="row">
+          <tsl-button data-msg="ok">OK</tsl-button>
+          <tsl-button data-msg="ok-cancel">OK / Cancel</tsl-button>
+          <tsl-button data-msg="yes-no">Yes / No</tsl-button>
+          <tsl-button data-msg="yes-no-cancel">Yes / No / Cancel</tsl-button>
+          <tsl-button data-msg="retry-cancel">Retry / Cancel</tsl-button>
+          <tsl-button data-msg="destructive" variant="danger">Destructive</tsl-button>
+        </div>
+        <tsl-text variant="secondary" id="dlgLog">Result: —</tsl-text>
+      </div>
+
+      <tsl-dialog id="busyDialog" heading="Export report" primary-text="Export" close-text="Cancel">
+        Export the report as a PDF to your downloads folder?
+      </tsl-dialog>
+    </div>
+  </tsl-nav-page>
+
+  <!-- ----------------------------------------------------------- Animation -->
+  <tsl-nav-page value="animation">
+    <div class="page">
+      <div class="section">
+        <tsl-text variant="header">Animation timeline</tsl-text>
+        <tsl-text variant="secondary">
+          An editing timeline for video and pixel/sprite tools. Scrub the ruler, drag and trim clips, box-select, Shift-drag the ruler
+          for a loop region, Ctrl + wheel to zoom, Space to play, Ctrl+Z to undo.
+        </tsl-text>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Video editor</tsl-text>
+        <div class="row">
+          <tsl-switch id="swOverlap" checked>Prevent overlap</tsl-switch>
+          <tsl-switch id="swConstrain" checked>Keep inside project</tsl-switch>
+          <tsl-switch id="swExtend">Grow project</tsl-switch>
+          <tsl-button id="addClip" icon="add">Add clip</tsl-button>
+          <tsl-button id="delClip" icon="delete">Delete selection</tsl-button>
+          <tsl-segmented id="timeFmt" value="timecode">
+            <tsl-segment value="timecode">Timecode</tsl-segment>
+            <tsl-segment value="frames">Frames</tsl-segment>
+            <tsl-segment value="seconds">Seconds</tsl-segment>
+          </tsl-segmented>
+        </div>
+        <tsl-animation-timeline id="video" fps="24" duration="480" pixels-per-frame="2" prevent-overlap constrain-to-duration style="height:330px"></tsl-animation-timeline>
+        <tsl-text variant="caption" id="videoLog">Last action: —</tsl-text>
+      </div>
+
+      <div class="section">
+        <tsl-text variant="body-strong">Pixel editor</tsl-text>
+        <tsl-animation-timeline id="pixels" fps="12" duration="24" pixels-per-frame="34" time-display="frames" header-width="120" style="height:210px"></tsl-animation-timeline>
+      </div>
+    </div>
+  </tsl-nav-page>
+
   <!-- -------------------------------------------------------------- Icons -->
   <tsl-nav-page value="icons">
     <div class="page">
       <tsl-text variant="header">Icons</tsl-text>
-      <tsl-text variant="secondary">Every Symbol from Tessel4J's icon catalog — vector-drawn, no icon font required.</tsl-text>
-      <div class="grid" id="iconGrid"></div>
+      <tsl-text variant="secondary">Every Symbol from the icon catalog — vector-drawn, no icon font required.</tsl-text>
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-1" id="iconGrid"></div>
     </div>
   </tsl-nav-page>
 
@@ -263,13 +592,26 @@
       <tsl-text variant="header">Design</tsl-text>
       <tsl-card header="Theme">
         <div class="row">
-          <tsl-button variant="standard" data-theme="light">Light</tsl-button>
-          <tsl-button variant="standard" data-theme="dark">Dark</tsl-button>
-          <tsl-button variant="standard" data-theme="system">System</tsl-button>
+          <tsl-button data-theme="light">Light</tsl-button>
+          <tsl-button data-theme="dark">Dark</tsl-button>
+          <tsl-button data-theme="system">System</tsl-button>
         </div>
       </tsl-card>
       <tsl-card header="Accent color">
         <div class="row" id="accentRow"></div>
+      </tsl-card>
+      <tsl-card header="Type ramp">
+        <div class="fill">
+          <tsl-text variant="display">Display</tsl-text>
+          <tsl-text variant="title">Title</tsl-text>
+          <tsl-text variant="subtitle">Subtitle</tsl-text>
+          <tsl-text variant="header">Header</tsl-text>
+          <tsl-text variant="body-strong">Body strong</tsl-text>
+          <tsl-text variant="body">Body</tsl-text>
+          <tsl-text variant="secondary">Secondary</tsl-text>
+          <tsl-text variant="caption">Caption</tsl-text>
+          <tsl-text variant="code">Code</tsl-text>
+        </div>
       </tsl-card>
     </div>
   </tsl-nav-page>
@@ -279,61 +621,163 @@
   import { Tessel } from '../src/tessel.js';
 
   Tessel.setup(Tessel.Theme.SYSTEM);
+  const $ = (sel) => document.querySelector(sel);
+  const say = (el, text) => { el.textContent = text; };
 
-  // theme buttons
+  // ---- design: theme + accent
   document.querySelectorAll('[data-theme]').forEach((btn) => {
     btn.addEventListener('click', () => Tessel.setTheme(btn.dataset.theme));
   });
-
-  // accent swatches
   const accents = ['#4f46e5', '#0078d4', '#0891b2', '#059669', '#d97706', '#db2777', '#7c3aed', '#dc2626'];
-  const accentRow = document.getElementById('accentRow');
+  const accentRow = $('#accentRow');
   function renderAccents() {
-    accentRow.innerHTML = '';
+    accentRow.replaceChildren();
     for (const hex of accents) {
       const btn = document.createElement('button');
-      btn.className = 'swatch';
+      btn.className = 'swatch' + (Tessel.getAccent() === hex ? ' active' : '');
       btn.style.background = hex;
-      if (Tessel.getAccent() === hex) btn.classList.add('active');
+      btn.setAttribute('aria-label', hex);
       btn.addEventListener('click', () => { Tessel.setAccent(hex); renderAccents(); });
       accentRow.appendChild(btn);
     }
-    const resetBtn = document.createElement('tsl-button');
-    resetBtn.setAttribute('variant', 'subtle');
-    resetBtn.textContent = 'Reset to built-in';
-    resetBtn.addEventListener('click', () => { Tessel.setAccent(null); renderAccents(); });
-    accentRow.appendChild(resetBtn);
+    const reset = document.createElement('tsl-button');
+    reset.setAttribute('variant', 'subtle');
+    reset.textContent = 'Reset to built-in';
+    reset.addEventListener('click', () => { Tessel.setAccent(null); renderAccents(); });
+    accentRow.appendChild(reset);
   }
   renderAccents();
 
-  // icon grid
-  const iconGrid = document.getElementById('iconGrid');
+  // ---- icons
   for (const [name, key] of Object.entries(Tessel.Symbol)) {
     const cell = document.createElement('div');
     cell.className = 'icon-cell';
-    const icon = Tessel.icon(key, 22);
     const label = document.createElement('span');
     label.textContent = name;
-    cell.append(icon, label);
-    iconGrid.appendChild(cell);
+    cell.append(Tessel.icon(key, 22), label);
+    $('#iconGrid').appendChild(cell);
   }
 
-  // feedback demos
-  document.getElementById('snackBtn').addEventListener('click', () => {
-    Tessel.snackbar.show('Saved', { message: 'Your changes were saved.', severity: 'success' });
+  // ---- buttons
+  for (const id of ['#dropDown', '#splitBtn']) {
+    $(id).addEventListener('select', (e) => say($('#buttonLog'), `${id.slice(1)} → ${e.detail.value}`));
+  }
+  $('#splitBtn').addEventListener('click', () => say($('#buttonLog'), 'splitBtn → main action (Send)'));
+  document.querySelector('tsl-toggle-split-button').addEventListener('change', (e) => say($('#buttonLog'), `toggle split → ${JSON.stringify(e.detail)}`));
+  $('#chipRow').addEventListener('remove', (e) => Tessel.snackbar.show('Chip removed', { message: e.target.textContent.trim(), duration: 1800 }));
+
+  // ---- inputs
+  const cities = ['Amsterdam', 'Athens', 'Barcelona', 'Berlin', 'Bucharest', 'Budapest', 'Copenhagen', 'Dublin', 'Lisbon', 'London', 'Madrid', 'Oslo', 'Paris', 'Prague', 'Rome', 'Vienna', 'Warsaw'];
+  $('#citySuggest').suggestions = cities;
+  $('#citySuggest').addEventListener('query-submitted', (e) => say($('#suggestLog'), `Query: "${e.detail.text}"`));
+  $('#datePick').addEventListener('change', (e) => say($('#pickerLog'), `Date ${e.detail.value}`));
+  $('#timePick').addEventListener('change', (e) => say($('#pickerLog'), `Time ${e.detail.value}`));
+  $('#colorPick').addEventListener('input', (e) => { $('#colorStage').style.background = e.detail.value; });
+  $('#colorStage').style.background = $('#colorPick').value;
+  $('#rating').addEventListener('change', (e) => Tessel.snackbar.show(`Rated ${e.detail.value} / 5`, { duration: 1500 }));
+
+  // ---- selection
+  $('#slider').addEventListener('input', (e) => say($('#sliderValue'), e.detail.value));
+  $('#segmented').addEventListener('change', (e) => say($('#segLog'), e.detail.value));
+
+  // ---- feedback
+  $('#snackBtn').addEventListener('click', () => Tessel.snackbar.show('Saved', { message: 'Your changes were saved.', severity: 'success' }));
+  $('#dialogBtn').addEventListener('click', async () => {
+    const result = await Tessel.dialog.show({ title: 'Delete file?', message: "This can't be undone.", primaryText: 'Delete', closeText: 'Cancel', primaryDestructive: true });
+    if (result === Tessel.dialog.Result.PRIMARY) Tessel.snackbar.show('Deleted', { severity: 'informational' });
   });
-  document.getElementById('dialogBtn').addEventListener('click', async () => {
-    const result = await Tessel.dialog.show({
-      title: 'Delete file?',
-      message: "This can't be undone.",
-      primaryText: 'Delete',
-      closeText: 'Cancel',
-      primaryDestructive: true,
-    });
-    if (result === Tessel.dialog.Result.PRIMARY) {
-      Tessel.snackbar.show('Deleted', { severity: 'informational' });
-    }
+  $('#helpBtn').addEventListener('click', () => document.querySelector('tsl-flyout').toggle());
+  $('#tipBtn2').addEventListener('click', () => document.querySelector('tsl-teaching-tip').show());
+
+  // ---- menus
+  $('#fileMenu').addEventListener('select', (e) => say($('#menuLog'), `Selected: ${e.detail.value}`));
+  $('#fileMenu').addEventListener('change', (e) => say($('#menuLog'), `${e.detail.value}: ${e.detail.checked}`));
+
+  // ---- navigation
+  $('#crumbs').addEventListener('item-click', (e) => Tessel.snackbar.show(`Go to ${e.detail.label}`, { duration: 1500 }));
+  $('#pager').addEventListener('change', (e) => say($('#pagerLog'), `Page ${e.detail.page}`));
+  const stepper = $('#stepper');
+  $('#stepBack').addEventListener('click', () => { stepper.current = Math.max(0, stepper.current - 1); });
+  $('#stepNext').addEventListener('click', () => { stepper.current = Math.min(4, stepper.current + 1); });
+  $('#tabView').addEventListener('add-tab-click', () => {
+    const n = document.querySelectorAll('#tabView > tsl-tab-view-item').length;
+    $('#tabView').addTab({ header: `Untitled ${n}`, icon: 'document', content: 'A fresh tab.' });
   });
+  const timeline = $('#timeline');
+  $('#tlLayout').addEventListener('change', (e) => {
+    const v = e.detail.value;
+    timeline.setAttribute('orientation', v.startsWith('horizontal') ? 'horizontal' : 'vertical');
+    timeline.setAttribute('layout', v === 'alternate' || v === 'horizontal-alt' ? 'alternate' : 'standard');
+  });
+
+  // ---- dialogs
+  const dlgLog = $('#dlgLog');
+  $('#dlgSimple').addEventListener('click', async () => {
+    const r = await Tessel.dialog.show({ title: 'Save changes?', message: 'You have unsaved changes.', primaryText: 'Save', closeText: 'Cancel' });
+    say(dlgLog, `Result: ${r}`);
+  });
+  $('#dlgThree').addEventListener('click', async () => {
+    const r = await Tessel.dialog.show({ title: 'Save changes?', message: 'Close without saving?', primaryText: 'Save', secondaryText: "Don't save", closeText: 'Cancel' });
+    say(dlgLog, `Result: ${r}`);
+  });
+  const busy = $('#busyDialog');
+  busy.addEventListener('primary-click', (e) => {
+    e.preventDefault(); // keep it open while we "export"
+    let pct = 0;
+    busy.reportProgress(0, 'Exporting… 0%');
+    const timer = setInterval(() => {
+      pct += 10;
+      busy.reportProgress(pct, `Exporting… ${pct}%`);
+      if (pct >= 100) { clearInterval(timer); busy.busy = false; busy.close('primary'); Tessel.snackbar.show('Report exported', { severity: 'success' }); }
+    }, 220);
+  });
+  $('#dlgBusy').addEventListener('click', () => busy.showModal());
+  const MSG = {
+    ok: ['Update installed', 'Restart to finish.', { buttons: 'ok', icon: 'success' }],
+    'ok-cancel': ['Overwrite file?', 'A file with that name already exists.', { buttons: 'ok-cancel', icon: 'warning' }],
+    'yes-no': ['Enable telemetry?', 'It helps us improve.', { buttons: 'yes-no', icon: 'informational' }],
+    'yes-no-cancel': ['Save changes?', 'Your changes will be lost otherwise.', { buttons: 'yes-no-cancel', icon: 'warning' }],
+    'retry-cancel': ['Connection lost', 'Could not reach the server.', { buttons: 'retry-cancel', icon: 'error' }],
+    destructive: ['Delete project?', "This can't be undone.", { buttons: 'yes-no', icon: 'warning', destructive: true }],
+  };
+  document.querySelectorAll('[data-msg]').forEach((btn) => {
+    btn.addEventListener('click', async () => say(dlgLog, `Result: ${await Tessel.dialog.message(...MSG[btn.dataset.msg])}`));
+  });
+
+  // ---- animation timeline: video editor
+  const wave = (n, seed) => Array.from({ length: n }, (_, i) => 0.25 + 0.7 * Math.abs(Math.sin(i * 0.37 + seed) * Math.cos(i * 0.11 + seed * 2)));
+  const video = $('#video');
+  video.tracks = [
+    { name: 'Titles', height: 36, clips: [{ name: 'Title card', start: 10, length: 70, color: '#d97706' }, { name: 'Credits', start: 400, length: 70, color: '#d97706' }] },
+    { name: 'Video 2', clips: [{ name: 'B-roll.mp4', start: 60, length: 90, color: '#0891b2' }, { name: 'Overlay.mov', start: 230, length: 60, color: '#0891b2' }] },
+    { name: 'Video 1', clips: [{ name: 'Intro.mp4', start: 0, length: 120, color: '#4f46e5' }, { name: 'Interview.mp4', start: 120, length: 180, color: '#4f46e5' }, { name: 'Outro.mp4', start: 330, length: 90, color: '#4f46e5' }] },
+    { name: 'Music', height: 52, clips: [{ name: 'Score.wav', start: 0, length: 480, color: '#059669', waveform: wave(240, 1) }] },
+    { name: 'Voice', height: 52, clips: [{ name: 'Narration.wav', start: 24, length: 150, color: '#7c3aed', waveform: wave(300, 3), mediaStart: 30, mediaLength: 240 }] },
+  ];
+  video.markers = [{ frame: 120, name: 'Interview' }, { frame: 330, name: 'Outro' }];
+  const videoLog = $('#videoLog');
+  for (const ev of ['clips-moved', 'clips-resized']) video.addEventListener(ev, (e) => say(videoLog, `Last action: ${ev} (${e.detail.clips.length} clip${e.detail.clips.length > 1 ? 's' : ''})`));
+  video.addEventListener('selection-changed', (e) => say(videoLog, `Selected: ${e.detail.clips.map((c) => c.name).join(', ') || 'nothing'}`));
+  video.addEventListener('clip-activated', (e) => say(videoLog, `Activated ${e.detail.clip.name}`));
+  const flag = (id, attr) => $(id).addEventListener('change', (e) => video.toggleAttribute(attr, e.detail.checked));
+  flag('#swOverlap', 'prevent-overlap'); flag('#swConstrain', 'constrain-to-duration'); flag('#swExtend', 'auto-extend-duration');
+  $('#timeFmt').addEventListener('change', (e) => video.setAttribute('time-display', e.detail.value));
+  let n = 1;
+  $('#addClip').addEventListener('click', () => {
+    const ok = video.addClip(video.tracks[2], { name: `Clip ${n++}`, start: video.currentFrame, length: 40, color: '#db2777' });
+    if (!ok) Tessel.snackbar.show('No room there', { severity: 'warning', duration: 1800 });
+  });
+  $('#delClip').addEventListener('click', () => video.deleteSelection());
+
+  // ---- animation timeline: pixel editor
+  const pixels = $('#pixels');
+  const cels = (name) => Array.from({ length: 24 }, (_, f) => ({ name: String(f + 1), start: f, length: 1 }));
+  pixels.tracks = [
+    { name: 'Highlights', color: '#d97706', clips: [{ name: '', start: 3, length: 1, keyframe: true }, { name: '', start: 12, length: 1, keyframe: true }, { name: '', start: 20, length: 1, keyframe: true }] },
+    { name: 'Ball', color: '#4f46e5', clips: [...cels('Ball'), { name: '', start: 6, length: 1, keyframe: true }] },
+    { name: 'Shadow', color: '#475569', clips: cels('Shadow').filter((c) => c.start % 2 === 0) },
+  ];
+  pixels.markers = [{ frame: 12, name: 'Bounce' }];
 </script>
 </body>
 </html>

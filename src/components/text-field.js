@@ -1,52 +1,53 @@
-// <tsl-text-field type="text|password|email|number|..." placeholder icon="search" value>
-// Port of TesselInputBorder + TesselTextFieldUI/TesselPasswordFieldUI/TesselFormattedTextFieldUI.
+// <tsl-text-field type="text|password|email|number|..." placeholder icon="search" value header clearable>
+// Port of TesselInputBorder + TesselTextFieldUI/TesselPasswordFieldUI/TesselFormattedTextFieldUI, with
+// Tessel.NET's ControlHelper extras: `header` (label above the input) and `clearable` ("x" button).
 
 import { TesselElement, define } from '../core/base-element.js';
-import { createIcon } from '../core/icons.js';
+import { createIcon, closeSvg } from '../core/icons.js';
+import { h, html } from '../core/dom.js';
 
-const STYLES = `
-  :host{display:inline-flex;width:220px;}
-  .field{position:relative;display:flex;align-items:center;gap:8px;width:100%;height:32px;padding:0 10px;
-    border-radius:var(--tsl-radius-md);border:1px solid var(--tsl-border);background:var(--tsl-input-bg);
-    overflow:hidden;transition:border-color var(--tsl-duration-fast) var(--tsl-ease);}
-  .field:hover{border-color:var(--tsl-border-strong);}
-  .field.focused{border-color:var(--tsl-accent);}
-  .field::after{content:"";position:absolute;left:1px;right:1px;bottom:0;height:0;background:var(--tsl-accent);
-    transition:height var(--tsl-duration-fast) var(--tsl-ease);}
-  .field.focused::after{height:2px;}
-  .icon{flex:none;display:flex;color:var(--tsl-text-secondary);}
-  input{flex:1;min-width:0;border:none;background:transparent;outline:none;font:inherit;font-size:14px;color:var(--tsl-text);
-    padding:0;height:100%;}
-  input::placeholder{color:var(--tsl-text-tertiary);}
-  :host([disabled]) .field{opacity:var(--tsl-disabled-alpha);}
-`;
+const HEADER = 'mb-1.5 block text-body font-medium text-text';
+const FIELD = 'group relative flex h-8 w-full items-center gap-2 overflow-hidden rounded-md border border-border bg-input px-2.5 '
+  + 'transition-colors duration-fast ease-tessel hover:border-border-strong focus-within:border-accent hover:focus-within:border-accent '
+  + 'host-[disabled]:opacity-45 host-[disabled]:pointer-events-none '
+  // Focus underline that grows from the bottom edge, like Tessel.NET's TextBox.
+  + 'after:absolute after:inset-x-px after:bottom-0 after:h-0 after:bg-accent after:transition-[height] after:duration-fast '
+  + 'after:ease-tessel focus-within:after:h-0.5';
+const INPUT = 'h-full min-w-0 flex-1 bg-transparent p-0 text-body text-text outline-none placeholder:text-text-tertiary';
+const CLEAR = 'mr-[-6px] flex size-6 flex-none cursor-pointer items-center justify-center rounded-sm bg-transparent text-text-secondary '
+  + 'transition-colors duration-fast hover:bg-control-hover hover:text-text active:bg-control-pressed';
 
 export class TesselTextField extends TesselElement {
-  static styles = STYLES;
-  static observedAttributes = ['disabled', 'icon', 'placeholder', 'type', 'value', 'readonly'];
+  static styles = ':host{display:inline-flex;flex-direction:column;width:220px;}';
+  static observedAttributes = ['disabled', 'icon', 'placeholder', 'type', 'value', 'readonly', 'header', 'clearable', 'name', 'maxlength', 'autocomplete'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const field = document.createElement('div');
-    field.className = 'field';
-    this._iconSlot = document.createElement('span');
-    this._iconSlot.className = 'icon';
-    const input = document.createElement('input');
-    field.append(this._iconSlot, input);
-    this.shadowRoot.appendChild(field);
-    this._field = field;
-    this._input = input;
+    this._header = h('label', HEADER);
+    this._iconSlot = h('span', 'flex flex-none text-text-secondary');
+    this._input = h('input', INPUT);
+    this._clear = h('button', CLEAR, { type: 'button', tabindex: '-1', 'aria-label': 'Clear' });
+    this._clear.innerHTML = closeSvg(10);
+    this._field = h('div', FIELD, null, this._iconSlot, this._input, this._clear);
+    this.shadowRoot.append(this._header, this._field);
     this._sync();
 
-    input.addEventListener('focus', () => field.classList.add('focused'));
-    input.addEventListener('blur', () => field.classList.remove('focused'));
-    input.addEventListener('input', () => {
-      this.setAttribute('value', input.value);
-      this.emit('input', { value: input.value });
+    this._input.addEventListener('input', () => {
+      this.setAttribute('value', this._input.value);
+      this._updateClear();
+      this.emit('input', { value: this._input.value });
     });
-    input.addEventListener('change', () => this.emit('change', { value: input.value }));
+    this._input.addEventListener('change', () => this.emit('change', { value: this._input.value }));
+    // Keep focus in the input when clearing, so the user can keep typing.
+    this._clear.addEventListener('mousedown', (e) => e.preventDefault());
+    this._clear.addEventListener('click', () => {
+      this.value = '';
+      this._input.focus();
+      this.emit('input', { value: '' });
+      this.emit('change', { value: '' });
+    });
   }
 
   attributeChangedCallback(name, oldV, newV) {
@@ -55,22 +56,38 @@ export class TesselTextField extends TesselElement {
   }
 
   _sync() {
-    this._input.type = this.getAttribute('type') || 'text';
-    this._input.placeholder = this.getAttribute('placeholder') || '';
-    this._input.disabled = this.disabled;
-    this._input.readOnly = this.hasAttribute('readonly');
-    if (this.hasAttribute('value') && this._input.value !== this.getAttribute('value')) {
-      this._input.value = this.getAttribute('value');
+    const input = this._input;
+    input.type = this.getAttribute('type') || 'text';
+    input.placeholder = this.getAttribute('placeholder') || '';
+    input.disabled = this.disabled;
+    input.readOnly = this.hasAttribute('readonly');
+    for (const attr of ['name', 'maxlength', 'autocomplete']) {
+      if (this.hasAttribute(attr)) input.setAttribute(attr, this.getAttribute(attr));
+      else input.removeAttribute(attr);
     }
+    if (this.hasAttribute('value') && input.value !== this.getAttribute('value')) {
+      input.value = this.getAttribute('value');
+    }
+    const header = this.getAttribute('header');
+    this._header.textContent = header || '';
+    this._header.hidden = !header;
     const icon = this.getAttribute('icon');
-    this._iconSlot.innerHTML = icon ? createIcon(icon, 16).innerHTML : '';
-    this._iconSlot.style.display = icon ? '' : 'none';
+    this._iconSlot.replaceChildren(...(icon ? [createIcon(icon, 16)] : []));
+    this._iconSlot.hidden = !icon;
+    this._updateClear();
+  }
+
+  _updateClear() {
+    this._clear.hidden = !this.hasAttribute('clearable') || this.hasAttribute('readonly') || !this._input.value;
   }
 
   get value() { return this._input ? this._input.value : (this.getAttribute('value') || ''); }
   set value(v) {
     this.setAttribute('value', v);
-    if (this._input) this._input.value = v;
+    if (this._input) {
+      this._input.value = v;
+      this._updateClear();
+    }
   }
 
   focus(options) { this._input?.focus(options); }

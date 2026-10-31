@@ -20,7 +20,12 @@ const MIME = {
 
 const server = http.createServer((req, res) => {
   let urlPath = decodeURIComponent(req.url.split('?')[0]);
-  if (urlPath === '/') urlPath = '/gallery/index.html';
+  if (urlPath === '/') {
+    // Redirect rather than rewrite, so the page's relative URLs (./gallery.generated.css) resolve under /gallery/.
+    res.writeHead(302, { Location: '/gallery/index.html' });
+    res.end();
+    return;
+  }
   const filePath = path.join(root, urlPath);
 
   if (!filePath.startsWith(root)) {

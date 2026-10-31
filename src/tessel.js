@@ -11,7 +11,8 @@ import {
 } from './core/theme.js';
 import { Symbol, createIcon } from './core/icons.js';
 import { showSnackbar } from './components/snackbar.js';
-import { showDialog, DialogResult } from './components/content-dialog.js';
+import { waveformFromSamples } from './components/animation-timeline.js';
+import { showDialog, showMessage, DialogResult, MessageButtons, MessageResult } from './components/content-dialog.js';
 
 import './components/button.js';
 import './components/checkbox.js';
@@ -39,6 +40,18 @@ import './components/content-dialog.js';
 import './components/navigation-view.js';
 import './components/text.js';
 import './components/theme-toggle.js';
+import './components/buttons.js';
+import './components/segmented.js';
+import './components/tab-view.js';
+import './components/wayfinding.js';
+import './components/timeline.js';
+import './components/progress.js';
+import './components/rating.js';
+import './components/containers.js';
+import './components/flyout.js';
+import './components/auto-suggest.js';
+import './components/pickers.js';
+import './components/animation-timeline.js';
 
 /** Applies a ButtonStyle to a <tsl-button> (or sets its `variant` attribute directly). */
 function style(button, buttonStyle) {
@@ -89,17 +102,20 @@ export const Tessel = {
   style, placeholder, leadingIcon, textStyle, label,
   icon: createIcon,
 
+  // helpers for tsl-animation-timeline
+  waveformFromSamples,
+
   // imperative components
   snackbar: { show: showSnackbar },
-  dialog: { show: showDialog, Result: DialogResult },
+  dialog: { show: showDialog, message: showMessage, Result: DialogResult, MessageButtons, MessageResult },
 };
 
 if (typeof window !== 'undefined') window.Tessel = Tessel;
 
 export {
-  TesselTheme, ButtonStyle, TextStyle, Severity, BadgeKind, Symbol, DialogResult,
+  TesselTheme, ButtonStyle, TextStyle, Severity, BadgeKind, Symbol, DialogResult, MessageButtons, MessageResult,
   setup, setTheme, setAccent, getTheme, getAccent, getPalette, isDark,
-  addThemeListener, removeThemeListener, showSnackbar, showDialog, createIcon,
+  addThemeListener, removeThemeListener, showSnackbar, showDialog, showMessage, createIcon,
 };
 
 export default Tessel;

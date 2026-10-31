@@ -1,7 +1,8 @@
-// <tsl-avatar name="Ada Lovelace" size="40" src="..."> — port of components/Avatar.java
+// <tsl-avatar name="Ada Lovelace" size="40" src="..."> — port of components/Avatar.java and Tessel.NET's Avatar
 // (circular, initials fallback, name-hashed fill color from an 8-color palette).
 
 import { TesselElement, define } from '../core/base-element.js';
+import { h } from '../core/dom.js';
 
 const PALETTE = ['#4f46e5', '#0891b2', '#059669', '#d97706', '#db2777', '#7c3aed', '#dc2626', '#2563eb'];
 
@@ -19,23 +20,17 @@ function hashColor(name) {
   return PALETTE[hash % PALETTE.length];
 }
 
-const STYLES = `
-  :host{display:inline-flex;}
-  .avatar{position:relative;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    overflow:hidden;background:var(--tsl-accent);color:#fff;font-weight:600;user-select:none;}
-  img{width:100%;height:100%;object-fit:cover;}
-`;
+const AVATAR = 'relative flex flex-none select-none items-center justify-center overflow-hidden rounded-full bg-accent font-semibold text-white';
 
 export class TesselAvatar extends TesselElement {
-  static styles = STYLES;
+  static styles = ':host{display:inline-flex;}';
   static observedAttributes = ['name', 'size', 'src'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    this._avatar = document.createElement('div');
-    this._avatar.className = 'avatar';
+    this._avatar = h('div', AVATAR, { role: 'img' });
     this.shadowRoot.appendChild(this._avatar);
     this._sync();
   }
@@ -49,15 +44,17 @@ export class TesselAvatar extends TesselElement {
     const size = Number(this.getAttribute('size')) || 40;
     const name = this.getAttribute('name') || '';
     const src = this.getAttribute('src');
-    this._avatar.style.width = `${size}px`;
-    this._avatar.style.height = `${size}px`;
-    this._avatar.style.fontSize = `${Math.max(8, size * 0.38)}px`;
-    this._avatar.style.background = hashColor(name) || 'var(--tsl-accent)';
-    this._avatar.innerHTML = '';
+    // Size-dependent values can't be a fixed utility, so they go through inline styles.
+    Object.assign(this._avatar.style, {
+      width: `${size}px`,
+      height: `${size}px`,
+      fontSize: `${Math.max(8, size * 0.38)}px`,
+      background: hashColor(name) || '',
+    });
+    this._avatar.setAttribute('aria-label', name);
+    this._avatar.replaceChildren();
     if (src) {
-      const img = document.createElement('img');
-      img.src = src;
-      img.alt = name;
+      const img = h('img', 'size-full object-cover', { src, alt: name });
       // A broken/unreachable image would otherwise show the browser's "missing image" glyph —
       // fall back to the same initials used when no `src` is given at all.
       img.addEventListener('error', () => {

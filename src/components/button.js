@@ -1,68 +1,43 @@
 // <tsl-button variant="standard|accent|outline|subtle|danger|icon|link">
-// Port of ButtonPainter / TesselButtonUI. A native <button> inside shadow DOM gives us free
-// hover/active/focus-visible/disabled handling instead of Swing's manual mouse/focus tracking.
+// Port of ButtonPainter / TesselButtonUI and Tessel.NET's Button.xaml. A native <button> inside shadow DOM
+// gives us free hover/active/focus-visible/disabled handling; the look is Tailwind utilities keyed off `variant`.
 
-import { TesselElement, FOCUS_VISIBLE_CSS, define } from '../core/base-element.js';
+import { TesselElement, define } from '../core/base-element.js';
 import { createIcon } from '../core/icons.js';
+import { h, cx } from '../core/dom.js';
 
-const STYLES = `
-  :host{display:inline-flex;vertical-align:middle;}
-  button{display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    height:32px;padding:0 14px;border-radius:var(--tsl-radius-md);border:1px solid transparent;
-    background:var(--tsl-control-bg);color:var(--tsl-text);font:inherit;font-size:14px;font-weight:500;
-    cursor:pointer;transition:background var(--tsl-duration-fast) var(--tsl-ease),
-      border-color var(--tsl-duration-fast) var(--tsl-ease), color var(--tsl-duration-fast) var(--tsl-ease);
-    -webkit-appearance:none;white-space:nowrap;width:100%;}
-  button:hover{background:var(--tsl-control-hover);}
-  button:active{background:var(--tsl-control-pressed);}
-  :host([disabled]) button{pointer-events:none;opacity:var(--tsl-disabled-alpha);}
-  ${FOCUS_VISIBLE_CSS}
+const BASE =
+  'inline-flex items-center justify-center gap-2 border rounded-md select-none cursor-pointer '
+  + 'whitespace-nowrap text-body font-medium transition-colors duration-fast ease-tessel '
+  + 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent '
+  + 'disabled:pointer-events-none disabled:opacity-45';
 
-  :host(:not([variant])) button, :host([variant="standard"]) button{border-color:var(--tsl-border);}
+const BOX = 'h-8 px-3.5 grow';
 
-  :host([variant="accent"]) button{background:var(--tsl-accent);border-color:var(--tsl-accent);color:var(--tsl-on-accent);}
-  :host([variant="accent"]) button:hover{background:var(--tsl-accent-hover);border-color:var(--tsl-accent-hover);}
-  :host([variant="accent"]) button:active{background:var(--tsl-accent-pressed);border-color:var(--tsl-accent-pressed);}
-
-  :host([variant="outline"]) button{background:transparent;border-color:var(--tsl-accent);color:var(--tsl-accent);}
-  :host([variant="outline"]) button:hover,:host([variant="outline"]) button:active{background:var(--tsl-accent-subtle);}
-
-  :host([variant="subtle"]) button{background:transparent;}
-  :host([variant="subtle"]) button:hover{background:var(--tsl-control-hover);}
-  :host([variant="subtle"]) button:active{background:var(--tsl-control-pressed);}
-
-  :host([variant="danger"]) button{background:var(--tsl-danger);border-color:var(--tsl-danger);color:#fff;}
-  :host([variant="danger"]) button:hover,:host([variant="danger"]) button:active{background:var(--tsl-danger-hover);border-color:var(--tsl-danger-hover);}
-
-  :host([variant="icon"]) button{background:transparent;padding:0;width:32px;height:32px;}
-  :host([variant="icon"]) button:hover{background:var(--tsl-control-hover);}
-  :host([variant="icon"]) button:active{background:var(--tsl-control-pressed);}
-
-  :host([variant="link"]) button{background:transparent;padding:0;height:auto;width:auto;color:var(--tsl-accent);
-    font-weight:400;text-decoration:none;}
-  :host([variant="link"]) button:hover{color:var(--tsl-accent-hover);background:transparent;}
-  :host([variant="link"]) button:active{color:var(--tsl-accent-pressed);background:transparent;}
-
-  ::slotted(*){pointer-events:none;}
-`;
+// Each variant owns its sizing too, so no two classes on the element ever set the same property.
+const VARIANTS = {
+  standard: `${BOX} bg-control border-border hover:bg-control-hover active:bg-control-pressed`,
+  accent: `${BOX} bg-accent border-accent text-on-accent hover:bg-accent-hover hover:border-accent-hover active:bg-accent-pressed active:border-accent-pressed`,
+  outline: `${BOX} bg-transparent border-accent text-accent hover:bg-accent-subtle active:bg-accent-subtle`,
+  subtle: `${BOX} bg-transparent border-transparent hover:bg-control-hover active:bg-control-pressed`,
+  danger: `${BOX} bg-danger border-danger text-white hover:bg-danger-hover hover:border-danger-hover active:bg-danger-hover active:border-danger-hover`,
+  icon: 'size-8 p-0 bg-transparent border-transparent hover:bg-control-hover active:bg-control-pressed',
+  link: 'p-0 bg-transparent border-transparent text-accent font-normal hover:text-accent-hover active:text-accent-pressed',
+};
 
 export class TesselButton extends TesselElement {
-  static styles = STYLES;
-  static observedAttributes = ['disabled', 'icon', 'icon-size'];
+  static styles = ':host{display:inline-flex;vertical-align:middle;} ::slotted(*){pointer-events:none;}';
+  static observedAttributes = ['disabled', 'icon', 'icon-size', 'variant'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const button = document.createElement('button');
-    button.type = this.getAttribute('type') || 'button';
-    button.disabled = this.disabled;
-    this._iconSlot = document.createElement('span');
-    this._iconSlot.part = 'icon';
-    button.appendChild(this._iconSlot);
-    button.appendChild(document.createElement('slot'));
-    this.shadowRoot.appendChild(button);
-    this._button = button;
+    this._iconSlot = h('span', 'inline-flex flex-none', { part: 'icon' });
+    this._button = h('button', '', { type: this.getAttribute('type') || 'button' }, this._iconSlot, h('slot'));
+    this._button.disabled = this.disabled;
+    this.shadowRoot.appendChild(this._button);
+    this._renderVariant();
     this._renderIcon();
   }
 
@@ -70,15 +45,20 @@ export class TesselButton extends TesselElement {
     super.attributeChangedCallback?.(name, oldV, newV);
     if (!this._built) return;
     if (name === 'disabled') this._button.disabled = this.disabled;
+    if (name === 'variant') this._renderVariant();
     if (name === 'icon' || name === 'icon-size') this._renderIcon();
+  }
+
+  _renderVariant() {
+    this._button.className = cx(BASE, VARIANTS[this.variant] || VARIANTS.standard);
   }
 
   _renderIcon() {
     const icon = this.getAttribute('icon');
-    this._iconSlot.innerHTML = '';
-    // An empty icon span is still a flex item, so the `gap` between it and the slotted label text
-    // would otherwise reserve 8px of unwanted space (and visually off-center a no-icon button).
-    this._iconSlot.style.display = icon ? '' : 'none';
+    this._iconSlot.replaceChildren();
+    // An empty icon span is still a flex item, so the `gap` between it and the slotted label text would
+    // otherwise reserve 8px of unwanted space (and visually off-center a no-icon button).
+    this._iconSlot.hidden = !icon;
     if (icon) this._iconSlot.appendChild(createIcon(icon, Number(this.getAttribute('icon-size')) || 16));
   }
 

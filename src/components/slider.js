@@ -1,79 +1,118 @@
-// <tsl-slider min="0" max="100" step="1" value="50"> — port of TesselSliderUI
+// <tsl-slider min="0" max="100" step="1" value="50"> — port of TesselSliderUI and Tessel.NET's Slider
 // (4px track radius 2, 20px thumb with an accent center dot, focus ring +2px around the thumb).
-// Uses a native <input type="range"> so keyboard/drag/accessibility come for free.
+// Built from plain elements with pointer capture and the ARIA slider keyboard model, so the whole look is
+// utility classes — no vendor `::-webkit-slider-thumb` / `::-moz-range-thumb` rules to keep in sync.
 
 import { TesselElement, define } from '../core/base-element.js';
+import { h } from '../core/dom.js';
 
-const STYLES = `
-  :host{display:inline-flex;width:200px;}
-  input[type="range"]{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;margin:0;}
-  input[type="range"]::-webkit-slider-runnable-track{height:4px;border-radius:2px;
-    background:linear-gradient(to right, var(--tsl-accent) 0%, var(--tsl-accent) var(--fill,0%),
-      var(--tsl-border-strong) var(--fill,0%), var(--tsl-border-strong) 100%);}
-  input[type="range"]::-moz-range-track{height:4px;border-radius:2px;background:var(--tsl-border-strong);}
-  input[type="range"]::-moz-range-progress{height:4px;border-radius:2px;background:var(--tsl-accent);}
-  /* The center dot is a radial-gradient sized entirely by its own circle-radius argument — not via
-     background-size, which was squeezing a 6px-radius (12px-diameter) circle into a 6x6px box.
-     Since the circle was more than twice the size of the box it was supposed to fade out within,
-     the box ended up solid-filled edge to edge, rendering as a square instead of a dot. */
-  input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;margin-top:-8px;width:20px;height:20px;
-    border-radius:50%;border:1px solid var(--tsl-border-strong);
-    background:radial-gradient(circle 3px at center, var(--tsl-accent) 99%, transparent 100%),
-      var(--tsl-surface);cursor:pointer;transition:background var(--tsl-duration-fast) var(--tsl-ease);}
-  input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;border:1px solid var(--tsl-border-strong);
-    background:radial-gradient(circle 3px at center, var(--tsl-accent) 99%, transparent 100%),
-      var(--tsl-surface);cursor:pointer;transition:background var(--tsl-duration-fast) var(--tsl-ease);}
-  input[type="range"]:active::-webkit-slider-thumb{background:radial-gradient(circle 2.5px at center, var(--tsl-accent) 99%, transparent 100%), var(--tsl-surface);}
-  input[type="range"]:hover::-webkit-slider-thumb{background:radial-gradient(circle 3.5px at center, var(--tsl-accent) 99%, transparent 100%), var(--tsl-surface);}
-  input[type="range"]:active::-moz-range-thumb{background:radial-gradient(circle 2.5px at center, var(--tsl-accent) 99%, transparent 100%), var(--tsl-surface);}
-  input[type="range"]:hover::-moz-range-thumb{background:radial-gradient(circle 3.5px at center, var(--tsl-accent) 99%, transparent 100%), var(--tsl-surface);}
-  input[type="range"]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--tsl-accent);outline-offset:2px;}
-  input[type="range"]:focus-visible::-moz-range-thumb{outline:2px solid var(--tsl-accent);outline-offset:2px;}
-  :host([disabled]) input{opacity:var(--tsl-disabled-alpha);pointer-events:none;}
-`;
+const ROOT = 'group relative flex h-5 w-full touch-none items-center outline-none cursor-pointer host-[disabled]:pointer-events-none host-[disabled]:opacity-45';
+const TRACK = 'relative h-1 w-full rounded-xs bg-border-strong';
+const FILL = 'absolute inset-y-0 left-0 rounded-xs bg-accent';
+const THUMB = 'absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-border-strong bg-surface '
+  + 'transition-shadow duration-fast ease-tessel group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-accent';
+const DOT = 'absolute left-1/2 top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent transition-transform duration-fast ease-tessel '
+  + 'group-hover:scale-125 group-active:scale-75';
 
 export class TesselSlider extends TesselElement {
-  static styles = STYLES;
+  static styles = ':host{display:inline-flex;width:200px;}';
   static observedAttributes = ['disabled', 'min', 'max', 'step', 'value'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const input = document.createElement('input');
-    input.type = 'range';
-    this.shadowRoot.appendChild(input);
-    this._input = input;
+    this._fill = h('div', FILL);
+    this._thumb = h('div', THUMB, null, h('span', DOT));
+    this._root = h('div', ROOT, { role: 'slider', tabindex: '0' }, h('div', TRACK, null, this._fill), this._thumb);
+    this.shadowRoot.appendChild(this._root);
+    this._value = this._read('value', this._min());
     this._sync();
-    input.addEventListener('input', () => {
-      this.setAttribute('value', input.value);
-      this._updateFill();
-      this.emit('input', { value: this.value });
+
+    this._root.addEventListener('pointerdown', (e) => {
+      if (this.disabled) return;
+      this._root.setPointerCapture(e.pointerId);
+      this._dragging = true;
+      this._fromPointer(e);
     });
-    input.addEventListener('change', () => this.emit('change', { value: this.value }));
+    this._root.addEventListener('pointermove', (e) => { if (this._dragging) this._fromPointer(e); });
+    const end = (e) => {
+      if (!this._dragging) return;
+      this._dragging = false;
+      this._root.releasePointerCapture?.(e.pointerId);
+      this.emit('change', { value: this.value });
+    };
+    this._root.addEventListener('pointerup', end);
+    this._root.addEventListener('pointercancel', end);
+    this._root.addEventListener('keydown', (e) => this._onKeydown(e));
   }
 
   attributeChangedCallback(name, oldV, newV) {
     super.attributeChangedCallback?.(name, oldV, newV);
-    if (this._built) this._sync();
+    if (!this._built) return;
+    if (name === 'value') this._value = this._snap(this._read('value', this._min()));
+    this._sync();
+  }
+
+  _read(attr, fallback) {
+    const n = Number(this.getAttribute(attr));
+    return this.hasAttribute(attr) && !Number.isNaN(n) ? n : fallback;
+  }
+
+  _min() { return this._read('min', 0); }
+  _max() { return this._read('max', 100); }
+  _step() { return this._read('step', 1) || 1; }
+
+  _snap(v) {
+    const min = this._min(), max = this._max(), step = this._step();
+    const snapped = min + Math.round((v - min) / step) * step;
+    // Trim float noise (0.1 + 0.2) to the step's own precision.
+    const digits = (String(step).split('.')[1] || '').length;
+    return Math.min(max, Math.max(min, Number(snapped.toFixed(digits))));
+  }
+
+  _set(v, { fire = true } = {}) {
+    const next = this._snap(v);
+    if (next === this._value) return;
+    this._value = next;
+    this.setAttribute('value', String(next));
+    if (fire) this.emit('input', { value: next });
+  }
+
+  _fromPointer(e) {
+    const rect = this._root.getBoundingClientRect();
+    const t = rect.width ? Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width)) : 0;
+    this._set(this._min() + t * (this._max() - this._min()));
+  }
+
+  _onKeydown(e) {
+    const step = this._step();
+    const big = Math.max(step, (this._max() - this._min()) / 10);
+    const keys = {
+      ArrowRight: step, ArrowUp: step, ArrowLeft: -step, ArrowDown: -step, PageUp: big, PageDown: -big,
+    };
+    let next = null;
+    if (e.key in keys) next = this._value + keys[e.key];
+    else if (e.key === 'Home') next = this._min();
+    else if (e.key === 'End') next = this._max();
+    if (next == null) return;
+    e.preventDefault();
+    this._set(next);
+    this.emit('change', { value: this.value });
   }
 
   _sync() {
-    this._input.min = this.getAttribute('min') ?? '0';
-    this._input.max = this.getAttribute('max') ?? '100';
-    this._input.step = this.getAttribute('step') ?? '1';
-    if (this.hasAttribute('value')) this._input.value = this.getAttribute('value');
-    this._input.disabled = this.disabled;
-    this._updateFill();
+    const min = this._min(), max = this._max();
+    const pct = max > min ? ((this._value - min) / (max - min)) * 100 : 0;
+    this._fill.style.width = `${pct}%`;
+    this._thumb.style.left = `${pct}%`;
+    this._root.setAttribute('aria-valuemin', String(min));
+    this._root.setAttribute('aria-valuemax', String(max));
+    this._root.setAttribute('aria-valuenow', String(this._value));
+    this._root.tabIndex = this.disabled ? -1 : 0;
   }
 
-  _updateFill() {
-    const min = Number(this._input.min), max = Number(this._input.max), value = Number(this._input.value);
-    const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
-    this._input.style.setProperty('--fill', `${pct}%`);
-  }
-
-  get value() { return Number(this._input ? this._input.value : this.getAttribute('value') || 0); }
+  get value() { return this._built ? this._value : this._read('value', 0); }
   set value(v) { this.setAttribute('value', String(v)); }
 }
 

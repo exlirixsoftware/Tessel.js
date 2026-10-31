@@ -1,70 +1,50 @@
 // <tsl-info-bar severity="informational|success|warning|error" title="Heads up" [closable] [elevated]>
 //   message text
-// </tsl-info-bar> — port of components/InfoBar.java.
+//   <tsl-button slot="action">Undo</tsl-button>
+// </tsl-info-bar> — port of components/InfoBar.java and Tessel.NET's InfoBar.
+// `heading` is the tooltip-free alias of `title` (a `title` attribute is also accepted, and is moved off
+// the element so the browser doesn't show it as a hover tooltip).
 
 import { TesselElement, define } from '../core/base-element.js';
 import { severitySvg, closeSvg } from '../core/icons.js';
-import { MOTION } from '../core/tokens.js';
+import { h, html, cx } from '../core/dom.js';
 
-const DISMISS_DURATION = parseInt(MOTION.fast, 10);
-
-const STYLES = `
-  :host{display:flex;opacity:1;transform:scale(1);
-    transition:opacity var(--tsl-duration-fast) var(--tsl-ease), transform var(--tsl-duration-fast) var(--tsl-ease);}
-  .bar{display:flex;align-items:flex-start;gap:12px;width:100%;padding:12px 10px 12px 16px;
-    border-radius:var(--tsl-radius-lg);border:1px solid var(--tsl-border);background:var(--tsl-info-subtle);}
-  :host([elevated]) .bar{box-shadow:0 1px 2px var(--tsl-shadow), 0 8px 24px var(--tsl-shadow);border-color:transparent;}
-  :host([surface]) .bar{background:var(--tsl-surface);}
-  .icon{flex:none;margin-top:1px;color:var(--tsl-info);}
-  .body{flex:1;min-width:0;}
-  .title{font-size:14px;font-weight:600;color:var(--tsl-text);}
-  .message{font-size:14px;color:var(--tsl-text-secondary);margin-top:2px;}
-  ::slotted(*){margin:0;}
-  .close{flex:none;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;
-    border:none;background:transparent;color:var(--tsl-text-secondary);cursor:pointer;}
-  .close:hover{background:var(--tsl-control-hover);}
-
-  :host([severity="success"]) .bar{background:var(--tsl-success-subtle);}
-  :host([severity="success"]) .icon{color:var(--tsl-success);}
-  :host([severity="warning"]) .bar{background:var(--tsl-warning-subtle);}
-  :host([severity="warning"]) .icon{color:var(--tsl-warning);}
-  :host([severity="error"]) .bar{background:var(--tsl-danger-subtle);}
-  :host([severity="error"]) .icon{color:var(--tsl-danger);}
-  :host([surface]) .bar, :host([surface][severity]) .bar{background:var(--tsl-surface);}
-`;
+const BAR = 'flex w-full items-start gap-3 rounded-lg border py-3 pl-4 pr-2.5 transition-[opacity,scale] duration-fast ease-tessel';
+const TONE = {
+  informational: { bar: 'bg-info-subtle', icon: 'text-info' },
+  success: { bar: 'bg-success-subtle', icon: 'text-success' },
+  warning: { bar: 'bg-warning-subtle', icon: 'text-warning' },
+  error: { bar: 'bg-danger-subtle', icon: 'text-danger' },
+};
+const CLOSE = 'flex size-7 flex-none cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent text-text-secondary '
+  + 'hover:bg-control-hover focus-visible:outline-2 focus-visible:outline-accent';
 
 export class TesselInfoBar extends TesselElement {
-  static styles = STYLES;
-  static observedAttributes = ['severity', 'title', 'closable'];
+  static styles = ':host{display:flex;}';
+  static observedAttributes = ['severity', 'title', 'heading', 'closable', 'elevated', 'surface'];
 
   connectedCallback() {
     super.connectedCallback();
     if (this._built) return;
     this._built = true;
-    const bar = document.createElement('div');
-    bar.className = 'bar';
-    this._icon = document.createElement('span');
-    this._icon.className = 'icon';
-    const body = document.createElement('div');
-    body.className = 'body';
-    this._title = document.createElement('div');
-    this._title.className = 'title';
-    const message = document.createElement('div');
-    message.className = 'message';
-    message.appendChild(document.createElement('slot'));
-    body.append(this._title, message);
-    this._closeBtn = document.createElement('button');
+    this._icon = h('span', 'mt-px flex-none');
+    this._title = h('div', 'text-body font-semibold text-text');
+    this._bar = h('div', BAR, { role: 'status' });
+    this._closeBtn = html('button', CLOSE, closeSvg(14));
     this._closeBtn.type = 'button';
-    this._closeBtn.className = 'close';
-    this._closeBtn.innerHTML = closeSvg(14);
+    this._closeBtn.setAttribute('aria-label', 'Close');
     this._closeBtn.addEventListener('click', () => {
       // Cancelable: a listener that wants to own the removal animation (e.g. the snackbar host,
       // which slides bars out instead of just fading them) can preventDefault() to skip this.
-      const notCanceled = this.emit('close', {});
-      if (notCanceled) this.dismiss();
+      if (this.emit('close', {})) this.dismiss();
     });
-    bar.append(this._icon, body, this._closeBtn);
-    this.shadowRoot.appendChild(bar);
+    this._bar.append(
+      this._icon,
+      h('div', 'min-w-0 flex-1', null, this._title, h('div', 'mt-0.5 text-body text-text-secondary', null, h('slot'))),
+      h('slot', 'flex-none self-center', { name: 'action' }),
+      this._closeBtn,
+    );
+    this.shadowRoot.appendChild(this._bar);
     this._sync();
   }
 
@@ -75,18 +55,26 @@ export class TesselInfoBar extends TesselElement {
 
   _sync() {
     const severity = this.getAttribute('severity') || 'informational';
+    const tone = TONE[severity] || TONE.informational;
+    const title = this.readHeading();
+    const elevated = this.hasAttribute('elevated');
+    this._bar.className = cx(
+      BAR,
+      this.hasAttribute('surface') ? 'bg-surface' : tone.bar,
+      elevated ? 'border-transparent shadow-card' : 'border-border',
+    );
+    this._icon.className = cx('mt-px flex-none', tone.icon);
     this._icon.innerHTML = severitySvg(severity, 20);
-    const title = this.getAttribute('title');
-    this._title.textContent = title || '';
-    this._title.style.display = title ? '' : 'none';
-    this._closeBtn.style.display = this.hasAttribute('closable') ? '' : 'none';
+    this._title.textContent = title;
+    this._title.hidden = !title;
+    this._closeBtn.hidden = !this.hasAttribute('closable');
+    this._bar.setAttribute('role', severity === 'error' || severity === 'warning' ? 'alert' : 'status');
   }
 
   /** Fades the bar out, then removes it. Exposed so external code (e.g. Tessel.snackbar) can call it. */
   dismiss() {
-    this.style.opacity = '0';
-    this.style.transform = 'scale(0.98)';
-    setTimeout(() => this.remove(), DISMISS_DURATION);
+    this._bar.classList.add('opacity-0', 'scale-98');
+    setTimeout(() => this.remove(), 130);
   }
 }
 
