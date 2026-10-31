@@ -87,7 +87,7 @@ function label(text, style) {
 }
 
 export const Tessel = {
-  VERSION: '1.0.0',
+  VERSION: '1.1.0',
 
   // theming
   setup, setTheme, setAccent, getTheme, getAccent, isDark,

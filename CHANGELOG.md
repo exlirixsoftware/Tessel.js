@@ -4,6 +4,10 @@ All notable changes to **Tessel.js** are documented in this file.
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [1.1.0] - 2026-10-31
+
 Restyled on Tailwind CSS v4 and brought up to date with Tessel.NET 1.2.0.
 
 ### Changed
